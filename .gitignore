@@ -1,0 +1,11 @@
+# Avoid tracking compiled binary folders
+bin/
+obj/
+
+# Avoid tracking your offline development database
+*.db
+*.db-shm
+*.db-wal
+
+# VS Code settings
+.vscode/

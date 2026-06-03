@@ -1,0 +1,46 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PizzaApp.ViewModels"
+             x:Class="PizzaApp.Views.LoginView"
+             x:DataType="vm:LoginViewModel">
+    
+    <Grid Background="#1e1e1e">
+        <Border Background="#2d2d2d" 
+                CornerRadius="10" 
+                Padding="30" 
+                Width="350" 
+                VerticalAlignment="Center" 
+                HorizontalAlignment="Center">
+            
+            <StackPanel Spacing="20">
+                <TextBlock Text="🍕 PIZZA SYSTEM" 
+                           FontSize="26" 
+                           FontWeight="Bold" 
+                           Foreground="#ff9f43" 
+                           HorizontalAlignment="Center"/>
+                
+                <TextBlock Text="Enter Staff PIN to Continue" 
+                           Foreground="#a0a0a0" 
+                           HorizontalAlignment="Center" 
+                           FontSize="14"/>
+
+                <TextBox PasswordChar="*" 
+                         MaxLength="4"
+                         Watermark="PIN Code"
+                         FontSize="22" 
+                         HorizontalContentAlignment="Center" 
+                         Width="200"/>
+
+                <Button Content="Login" 
+                        Background="#ff9f43" 
+                        Foreground="White" 
+                        FontWeight="Bold"
+                        FontSize="16"
+                        Padding="10"
+                        HorizontalAlignment="Stretch" 
+                        HorizontalContentAlignment="Center"
+                        CornerRadius="5"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>
