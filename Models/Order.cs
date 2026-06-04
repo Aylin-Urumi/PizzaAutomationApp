@@ -14,13 +14,12 @@ public class Order
     public OrderType Type { get; set; }
     public OrderStatus Status { get; set; } = OrderStatus.Pending;
     
-    // NEW: Customer metadata tracking
     public string CustomerName { get; set; } = string.Empty;
     public string? PhoneNumber { get; set; }
-    
     public string? DeliveryAddress { get; set; }
     public decimal TotalAmount { get; set; }
     public bool IsPaid { get; set; } = true;
 
+    // Entity Framework navigation collection
     public List<OrderItem> Items { get; set; } = new();
 }
