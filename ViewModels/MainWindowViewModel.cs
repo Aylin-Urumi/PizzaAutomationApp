@@ -21,21 +21,23 @@ public class MainWindowViewModel : ViewModelBase
     {
         return new LoginViewModel(role =>
         {
-            // If a Cashier logs in, send them straight to the custom Cashier POS screen!
             if (role == "Cashier")
             {
-                CurrentPage = new CashierViewModel(() => 
-                {
-                    // If they click log out, bring them back to the login screen
-                    CurrentPage = CreateLoginScreen();
-                });
+                CurrentPage = new CashierViewModel(() => CurrentPage = CreateLoginScreen());
             }
-            else
+            else if (role == "Manager")
             {
-                // Fallback placeholder for other roles (Manager, Chef, Driver) for now
-                CurrentPage = new DashboardViewModel(role, () => {
-                    CurrentPage = CreateLoginScreen();
-                });
+                CurrentPage = new ManagerViewModel(() => CurrentPage = CreateLoginScreen());
+            }
+            else if (role == "Chef")
+            {
+                // ROUTE CHEF
+                CurrentPage = new ChefViewModel(() => CurrentPage = CreateLoginScreen());
+            }
+            else if (role == "Driver")
+            {
+                // ROUTE DRIVER
+                CurrentPage = new DeliveryViewModel(() => CurrentPage = CreateLoginScreen());
             }
         });
     }

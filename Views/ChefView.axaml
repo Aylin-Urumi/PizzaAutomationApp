@@ -1,0 +1,65 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PizzaApp.ViewModels"
+             xmlns:models="using:PizzaApp.Models"
+             x:Class="PizzaApp.Views.ChefView"
+             x:DataType="vm:ChefViewModel">
+    
+    <Grid RowDefinitions="Auto, *" Background="#141414">
+        <!-- Top Title Bar -->
+        <Grid Grid.Row="0" ColumnDefinitions="*, Auto, Auto" Margin="20 20 20 15">
+            <TextBlock Text="👨‍🍳 KITCHEN DISPLAY SYSTEM (KDS)" FontSize="24" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+            <Button Grid.Column="1" Content="🔄 Refresh Tickets" Command="{Binding LoadOrdersCommand}" Background="#222222" Foreground="White" Margin="0 0 10 0" Padding="15 8" CornerRadius="5"/>
+            <Button Grid.Column="2" Content="Log Out" Command="{Binding LogoutCommand}" Background="#ff4d4d" Foreground="White" Padding="15 8" CornerRadius="5"/>
+        </Grid>
+
+        <!-- Main Orders Wrap List -->
+        <ScrollViewer Grid.Row="1" Padding="15">
+            <ItemsControl ItemsSource="{Binding PendingOrders}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:Order">
+                        <Border Background="#1e1e1e" Width="280" MinHeight="220" CornerRadius="10" Margin="10" Padding="15" BoxShadow="0 4 10 0 #000000">
+                            <Grid RowDefinitions="Auto, *, Auto">
+                                <!-- Order Header Details -->
+                                <StackPanel Grid.Row="0" Spacing="2">
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <TextBlock Text="{Binding Id, StringFormat='Ticket #{0}'}" FontSize="18" FontWeight="Bold" Foreground="#ff9f43"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Type}" FontSize="12" FontWeight="Bold" Foreground="#a0a0a0" VerticalAlignment="Center"/>
+                                    </Grid>
+                                    <TextBlock Text="{Binding OrderDate, StringFormat='{}{0:HH:mm}'}" FontSize="11" Foreground="#777777"/>
+                                    <Separator Background="#2d2d2d" Margin="0 5"/>
+                                </StackPanel>
+
+                                <!-- Nested loop printing products & quantities ordered -->
+                                <ScrollViewer Grid.Row="1" Margin="0 5">
+                                    <ItemsControl ItemsSource="{Binding Items}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="models:OrderItem">
+                                                <Grid ColumnDefinitions="*, Auto" Margin="0 3">
+                                                    <TextBlock Text="{Binding Product.Name}" Foreground="White" TextWrapping="Wrap" FontSize="14" FontWeight="Medium"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding Quantity, StringFormat='x{0}'}" Foreground="#ff9f43" FontWeight="Bold" FontSize="14" Margin="10 0 0 0"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+
+                                <!-- Interactive Action Buttons -->
+                                <Button Grid.Row="2" Content="✅ Done / Cooked" 
+                                        Command="{Binding $parent[UserControl].((vm:ChefViewModel)DataContext).CompleteCookingCommand}"
+                                        CommandParameter="{Binding}"
+                                        Background="#4cd137" Foreground="White" FontWeight="Bold" Padding="10"
+                                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" CornerRadius="5"/>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

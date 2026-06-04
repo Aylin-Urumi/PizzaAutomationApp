@@ -1,0 +1,56 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PizzaApp.ViewModels"
+             x:Class="PizzaApp.Views.ManagerView"
+             x:DataType="vm:ManagerViewModel">
+    
+    <!-- REMOVED: Padding="30" from here so it compiles cleanly -->
+    <Grid RowDefinitions="Auto, *" Background="#141414">
+        
+        <!-- Header Menu (Added a 20-pixel margin around it) -->
+        <Grid Grid.Row="0" ColumnDefinitions="*, Auto, Auto" Margin="20 20 20 30">
+            <TextBlock Text="📊 MANAGER ANALYTICS DASHBOARD" FontSize="24" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+            <Button Grid.Column="1" Content="🔄 Refresh Data" Command="{Binding RefreshCommand}" Background="#222222" Foreground="White" Margin="0 0 10 0" Padding="15 8" CornerRadius="5"/>
+            <Button Grid.Column="2" Content="Log Out" Command="{Binding LogoutCommand}" Background="#ff4d4d" Foreground="White" Padding="15 8" CornerRadius="5"/>
+        </Grid>
+
+        <!-- Stats Grid Layout (Added a 20-pixel padding directly inside the scroll viewer) -->
+        <ScrollViewer Grid.Row="1" Padding="20">
+            <UniformGrid Columns="2" Rows="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                
+                <!-- Card 1: Daily Revenue -->
+                <Border Background="#1e1e1e" CornerRadius="10" Padding="25" Margin="10" BoxShadow="0 4 10 0 #000000">
+                    <StackPanel Spacing="10" VerticalAlignment="Center">
+                        <TextBlock Text="📅 DAILY REVENUE" FontSize="14" FontWeight="SemiBold" Foreground="#a0a0a0"/>
+                        <TextBlock Text="{Binding DailyRevenue, StringFormat='${0:F2}'}" FontSize="36" FontWeight="Bold" Foreground="#4cd137"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Card 2: Daily Orders -->
+                <Border Background="#1e1e1e" CornerRadius="10" Padding="25" Margin="10" BoxShadow="0 4 10 0 #000000">
+                    <StackPanel Spacing="10" VerticalAlignment="Center">
+                        <TextBlock Text="📦 DAILY ORDERS PLACED" FontSize="14" FontWeight="SemiBold" Foreground="#a0a0a0"/>
+                        <TextBlock Text="{Binding DailyOrderCount}" FontSize="36" FontWeight="Bold" Foreground="#ff9f43"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Card 3: Monthly Revenue -->
+                <Border Background="#1e1e1e" CornerRadius="10" Padding="25" Margin="10" BoxShadow="0 4 10 0 #000000">
+                    <StackPanel Spacing="10" VerticalAlignment="Center">
+                        <TextBlock Text="📆 MONTHLY REVENUE" FontSize="14" FontWeight="SemiBold" Foreground="#a0a0a0"/>
+                        <TextBlock Text="{Binding MonthlyRevenue, StringFormat='${0:F2}'}" FontSize="36" FontWeight="Bold" Foreground="#4cd137"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Card 4: Monthly Orders -->
+                <Border Background="#1e1e1e" CornerRadius="10" Padding="25" Margin="10" BoxShadow="0 4 10 0 #000000">
+                    <StackPanel Spacing="10" VerticalAlignment="Center">
+                        <TextBlock Text="📈 TOTAL MONTHLY ORDERS" FontSize="14" FontWeight="SemiBold" Foreground="#a0a0a0"/>
+                        <TextBlock Text="{Binding MonthlyOrderCount}" FontSize="36" FontWeight="Bold" Foreground="#ff9f43"/>
+                    </StackPanel>
+                </Border>
+
+            </UniformGrid>
+        </ScrollViewer>
+    </Grid>
+</UserControl>
