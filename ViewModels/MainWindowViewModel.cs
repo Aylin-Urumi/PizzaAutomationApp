@@ -1,4 +1,5 @@
-﻿namespace PizzaApp.ViewModels;
+﻿
+namespace PizzaApp.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase
 {
@@ -6,14 +7,26 @@ public class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel()
     {
-        // Default to showing the Login Screen on startup
-        _currentPage = new LoginViewModel();
+        // Boot up into the login screen and pass it a method to run on success
+        _currentPage = CreateLoginScreen();
     }
 
     public ViewModelBase CurrentPage
     {
         get => _currentPage;
-        // Using the Toolkit's built-in change notification property agent
         set => SetProperty(ref _currentPage, value);
+    }
+
+    private LoginViewModel CreateLoginScreen()
+    {
+        return new LoginViewModel(role =>
+        {
+            // When login succeeds, swap out the page to a dashboard view!
+            CurrentPage = new DashboardViewModel(role, () =>
+            {
+                // When they click logout inside the dashboard, loop back here
+                CurrentPage = CreateLoginScreen();
+            });
+        });
     }
 }

@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PizzaApp.ViewModels"
+             x:Class="PizzaApp.Views.DashboardView"
+             x:DataType="vm:DashboardViewModel">
+    <Grid Background="#1e1e1e">
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="25">
+            <TextBlock Text="{Binding RoleTitle}" 
+                       FontSize="32" 
+                       FontWeight="Bold" 
+                       Foreground="#ff9f43" 
+                       HorizontalAlignment="Center"/>
+            
+            <TextBlock Text="Authentication Successful. System Modules Loaded Safely." 
+                       Foreground="#a0a0a0" 
+                       HorizontalAlignment="Center"/>
+
+            <Button Content="Log Out" 
+                    Command="{Binding LogoutCommand}"
+                    Background="#ff4d4d" 
+                    Foreground="White" 
+                    FontWeight="Bold"
+                    Padding="20 10"
+                    HorizontalAlignment="Center"
+                    CornerRadius="5"/>
+        </StackPanel>
+    </Grid>
+</UserControl>
