@@ -23,13 +23,16 @@
                         <Border Background="#1e1e1e" CornerRadius="10" Padding="20" Margin="0 0 0 15" BoxShadow="0 4 10 0 #000000">
                             <Grid ColumnDefinitions="*, 200">
                                 <!-- Address Left Pane -->
-                                <StackPanel Grid.Column="0" Spacing="8" VerticalAlignment="Center">
+                                <!-- Address & Contact Pane -->
+                                <StackPanel Grid.Column="0" Spacing="6" VerticalAlignment="Center">
                                     <Grid ColumnDefinitions="Auto, Auto">
                                         <TextBlock Text="{Binding Id, StringFormat='Delivery Ticket #{0}'}" FontSize="18" FontWeight="Bold" Foreground="#4cd137"/>
                                         <TextBlock Grid.Column="1" Text="{Binding OrderDate, StringFormat=' placed at {0:HH:mm}'}" Foreground="#777777" FontSize="13" VerticalAlignment="Bottom"/>
                                     </Grid>
-                                    <StackPanel Orientation="Horizontal" Spacing="5">
-                                        <TextBlock Text="📍 Drop-off Destination:" Foreground="#ff9f43" FontWeight="SemiBold" FontSize="14"/>
+                                    <TextBlock Text="{Binding CustomerName, StringFormat='👤 Name: {0}'}" Foreground="White" FontSize="14" FontWeight="Medium"/>
+                                    <TextBlock Text="{Binding PhoneNumber, StringFormat='📞 Phone: {0}'}" Foreground="#a0a0a0" FontSize="13"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="5" Margin="0 2 0 0">
+                                        <TextBlock Text="📍 Address:" Foreground="#ff9f43" FontWeight="SemiBold" FontSize="14"/>
                                         <TextBlock Text="{Binding DeliveryAddress}" Foreground="White" FontSize="14" FontWeight="Medium" TextWrapping="Wrap"/>
                                     </StackPanel>
                                 </StackPanel>

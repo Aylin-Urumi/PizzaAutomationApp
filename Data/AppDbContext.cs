@@ -10,6 +10,12 @@ public class AppDbContext : DbContext
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
 
+    // NEW: This constructor guarantees SQLite creates tables matching our models
+    public AppDbContext()
+    {
+        Database.EnsureCreated();
+    }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseSqlite("Data Source=pizza.db");
@@ -29,11 +35,9 @@ public class AppDbContext : DbContext
 
         // 2. Seed our initial 3 Pizzas and 3 Drinks
         modelBuilder.Entity<Product>().HasData(
-            // Pizzas
             new Product { Id = 1, Name = "Margherita Pizza", Price = 10.99m, Category = "Pizza" },
             new Product { Id = 2, Name = "Pepperoni Pizza", Price = 12.99m, Category = "Pizza" },
             new Product { Id = 3, Name = "BBQ Chicken Pizza", Price = 13.99m, Category = "Pizza" },
-            // Drinks
             new Product { Id = 4, Name = "Coca Cola", Price = 1.99m, Category = "Drink" },
             new Product { Id = 5, Name = "Sprite", Price = 1.99m, Category = "Drink" },
             new Product { Id = 6, Name = "Bottled Water", Price = 0.99m, Category = "Drink" }

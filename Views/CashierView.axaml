@@ -11,7 +11,7 @@
             <StackPanel Spacing="25">
                 <Grid ColumnDefinitions="*, Auto">
                     <TextBlock Text="🍕 CASHIER POINT OF SALE" FontSize="24" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
-                    <Button Grid.Column="1" Content="Log Out" Command="{Binding LogoutCommand}" Background="#ff4d4d" Foreground="White" Padding="15 8" CornerRadius="5"/>
+                    <Button Content="Log Out" Command="{Binding LogoutCommand}" Background="#ff4d4d" Foreground="White" Padding="15 8" CornerRadius="5"/>
                 </Grid>
 
                 <TextBlock Text="Pizzas" FontSize="18" FontWeight="SemiBold" Foreground="#ff9f43"/>
@@ -65,35 +65,114 @@
                 
                 <TextBlock Grid.Row="0" Text="Current Order" FontSize="20" FontWeight="Bold" Foreground="White" Margin="0 0 0 15"/>
 
+                <!-- Shopping Cart List -->
                 <ListBox Grid.Row="1" ItemsSource="{Binding Cart}" Background="Transparent" BorderThickness="0">
                     <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="vm:OrderItemViewModel">
-                            <Grid ColumnDefinitions="*, Auto, Auto" Margin="0 5">
-                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <Grid ColumnDefinitions="*, Auto" Margin="0 5">
+                                <StackPanel Grid.Column="0" Spacing="6">
+                                    <!-- Product Title Line -->
                                     <TextBlock Text="{Binding Product.Name}" Foreground="White" FontWeight="Medium" TextWrapping="Wrap"/>
-                                    <TextBlock Text="{Binding Product.Price, StringFormat='${0:F2}'}" Foreground="#a0a0a0" FontSize="12"/>
+                    
+                                    <!-- Pizza Modifiers Row (Hidden automatically if selecting a Drink) -->
+                                    <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding IsPizza}">
+                                        <ComboBox ItemsSource="{Binding Sizes}" 
+                                                  SelectedItem="{Binding Size}" 
+                                                  Width="95" Height="30" FontSize="12"
+                                                  Background="#2d2d2d" Foreground="White"/>
+                                        <ComboBox ItemsSource="{Binding Crusts}" 
+                                                  SelectedItem="{Binding Crust}" 
+                                                  Width="110" Height="30" FontSize="12"
+                                                  Background="#2d2d2d" Foreground="White"/>
+                                    </StackPanel>
+                    
+                                    <!-- Dynamic Live Price Calculation Line -->
+                                    <TextBlock Text="{Binding ComputedPrice, StringFormat='${0:F2} each'}" Foreground="#a0a0a0" FontSize="12"/>
                                 </StackPanel>
-                                <TextBlock Grid.Column="1" Text="{Binding Quantity, StringFormat='x{0}'}" Foreground="White" Margin="10 0" VerticalAlignment="Center"/>
-                                <Button Grid.Column="2" Content="✕" 
-                                        Command="{Binding $parent[UserControl].((vm:CashierViewModel)DataContext).RemoveFromCartCommand}" 
-                                        CommandParameter="{Binding}"
-                                        Background="Transparent" Foreground="#ff4d4d"/>
+
+                                <!-- Quantity & Drop Items Controls Column -->
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Spacing="10">
+                                    <TextBlock Text="{Binding Quantity, StringFormat='x{0}'}" Foreground="White" VerticalAlignment="Center" FontWeight="Bold"/>
+                                    <Button Content="✕" 
+                                            Command="{Binding $parent[UserControl].((vm:CashierViewModel)DataContext).RemoveFromCartCommand}" 
+                                            CommandParameter="{Binding}"
+                                            Background="Transparent" Foreground="#ff4d4d"/>
+                                </StackPanel>
                             </Grid>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
 
-                <StackPanel Grid.Row="2" Spacing="15" Margin="0 15 0 0">
+                <!-- Order Toggles & Checkout Button -->
+                <!-- Order Toggles & Checkout Button -->
+                <!-- Order Toggles & Checkout Button -->
+                <StackPanel Grid.Row="2" Spacing="12" Margin="0 15 0 0">
                     <Separator Background="#2d2d2d"/>
-                    
+    
+                    <!-- Customer Info Inputs with explicit focus styling -->
+                    <TextBox Watermark="Customer Name (Required)" 
+                             Text="{Binding CustomerName}" 
+                             Background="#2d2d2d" 
+                             Foreground="White"
+                             CaretBrush="White"
+                             BorderBrush="#555555"
+                             Padding="10 8">
+                        <TextBox.Styles>
+                            <!-- Forces text and background to stay high-contrast when clicked/focused -->
+                            <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+                                <Setter Property="Background" Value="#3d3d3d"/>
+                                <Setter Property="BorderBrush" Value="#ff9f43"/>
+                            </Style>
+                            <Style Selector="TextBox:focus">
+                                <Setter Property="Foreground" Value="White"/>
+                            </Style>
+                        </TextBox.Styles>
+                    </TextBox>
+
+                    <!-- Toggle Switch for Delivery vs Counter -->
                     <ToggleSwitch Content="Delivery Order" IsChecked="{Binding IsDelivery}" Foreground="White" OffContent="No" OnContent="Yes"/>
-                    
+    
+                    <!-- Delivery Details (Only visible if IsDelivery is checked) -->
+                    <TextBox Watermark="Customer Phone Number" 
+                             Text="{Binding PhoneNumber}"
+                             IsVisible="{Binding IsDelivery}" 
+                             Background="#2d2d2d" 
+                             Foreground="White"
+                             CaretBrush="White"
+                             BorderBrush="#555555"
+                             Padding="10 8">
+                        <TextBox.Styles>
+                            <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+                                <Setter Property="Background" Value="#3d3d3d"/>
+                                <Setter Property="BorderBrush" Value="#ff9f43"/>
+                            </Style>
+                            <Style Selector="TextBox:focus">
+                                <Setter Property="Foreground" Value="White"/>
+                            </Style>
+                        </TextBox.Styles>
+                    </TextBox>
+             
                     <TextBox Watermark="Enter Delivery Address" 
                              Text="{Binding DeliveryAddress}"
                              IsVisible="{Binding IsDelivery}" 
-                             Height="60" TextWrapping="Wrap"/>
+                             Height="60" TextWrapping="Wrap"
+                             Background="#2d2d2d" 
+                             Foreground="White"
+                             CaretBrush="White"
+                             BorderBrush="#555555"
+                             Padding="10 8">
+                        <TextBox.Styles>
+                            <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+                                <Setter Property="Background" Value="#3d3d3d"/>
+                                <Setter Property="BorderBrush" Value="#ff9f43"/>
+                            </Style>
+                            <Style Selector="TextBox:focus">
+                                <Setter Property="Foreground" Value="White"/>
+                            </Style>
+                        </TextBox.Styles>
+                    </TextBox>
 
-                    <Grid ColumnDefinitions="*, Auto">
+                    <Grid ColumnDefinitions="*, Auto" Margin="0 5 0 0">
                         <TextBlock Text="Total Amount:" FontSize="18" FontWeight="Bold" Foreground="White"/>
                         <TextBlock Grid.Column="1" Text="{Binding CartTotal, StringFormat='${0:F2}'}" FontSize="18" FontWeight="Bold" Foreground="#ff9f43"/>
                     </Grid>

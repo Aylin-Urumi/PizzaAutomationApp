@@ -6,7 +6,7 @@ using System.Linq;
 using Avalonia.Markup.Xaml;
 using PizzaApp.ViewModels;
 using PizzaApp.Views;
-using PizzaApp.Data; // 1. Added this to talk to your Data folder
+using PizzaApp.Data; 
 
 namespace PizzaApp;
 
@@ -19,7 +19,7 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        // 2. This ensures the 'pizza.db' file is created and seeded before the UI shows up
+        
         using (var context = new AppDbContext())
         {
             context.Database.EnsureCreated();
@@ -29,7 +29,7 @@ public partial class App : Application
         {
             desktop.MainWindow = new MainWindow
             {
-                DataContext = new MainWindowViewModel(), // Kept your original ViewModel
+                DataContext = new MainWindowViewModel(), 
             };
         }
 
