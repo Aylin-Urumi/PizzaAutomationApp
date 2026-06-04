@@ -1,0 +1,111 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PizzaApp.ViewModels"
+             xmlns:models="using:PizzaApp.Models"
+             x:Class="PizzaApp.Views.CashierView"
+             x:DataType="vm:CashierViewModel">
+    
+    <Grid ColumnDefinitions="*, 350" Background="#141414">
+        
+        <ScrollViewer Grid.Column="0" Padding="20">
+            <StackPanel Spacing="25">
+                <Grid ColumnDefinitions="*, Auto">
+                    <TextBlock Text="🍕 CASHIER POINT OF SALE" FontSize="24" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                    <Button Grid.Column="1" Content="Log Out" Command="{Binding LogoutCommand}" Background="#ff4d4d" Foreground="White" Padding="15 8" CornerRadius="5"/>
+                </Grid>
+
+                <TextBlock Text="Pizzas" FontSize="18" FontWeight="SemiBold" Foreground="#ff9f43"/>
+                <ItemsControl ItemsSource="{Binding PizzaMenu}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" ItemWidth="180" ItemHeight="100"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="models:Product">
+                            <Button Margin="5" Padding="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                    Background="#222222" CornerRadius="8"
+                                    Command="{Binding $parent[UserControl].((vm:CashierViewModel)DataContext).AddToCartCommand}"
+                                    CommandParameter="{Binding}">
+                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="5">
+                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"/>
+                                    <TextBlock Text="{Binding Price, StringFormat='${0:F2}'}" Foreground="#ff9f43" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <TextBlock Text="Drinks" FontSize="18" FontWeight="SemiBold" Foreground="#ff9f43"/>
+                <ItemsControl ItemsSource="{Binding DrinkMenu}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" ItemWidth="180" ItemHeight="100"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="models:Product">
+                            <Button Margin="5" Padding="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                    Background="#222222" CornerRadius="8"
+                                    Command="{Binding $parent[UserControl].((vm:CashierViewModel)DataContext).AddToCartCommand}"
+                                    CommandParameter="{Binding}">
+                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="5">
+                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"/>
+                                    <TextBlock Text="{Binding Price, StringFormat='${0:F2}'}" Foreground="#ff9f43" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Border Grid.Column="1" Background="#1e1e1e" BorderBrush="#2d2d2d" BorderThickness="1 0 0 0" Padding="20">
+            <Grid RowDefinitions="Auto, *, Auto">
+                
+                <TextBlock Grid.Row="0" Text="Current Order" FontSize="20" FontWeight="Bold" Foreground="White" Margin="0 0 0 15"/>
+
+                <ListBox Grid.Row="1" ItemsSource="{Binding Cart}" Background="Transparent" BorderThickness="0">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:OrderItemViewModel">
+                            <Grid ColumnDefinitions="*, Auto, Auto" Margin="0 5">
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Product.Name}" Foreground="White" FontWeight="Medium" TextWrapping="Wrap"/>
+                                    <TextBlock Text="{Binding Product.Price, StringFormat='${0:F2}'}" Foreground="#a0a0a0" FontSize="12"/>
+                                </StackPanel>
+                                <TextBlock Grid.Column="1" Text="{Binding Quantity, StringFormat='x{0}'}" Foreground="White" Margin="10 0" VerticalAlignment="Center"/>
+                                <Button Grid.Column="2" Content="✕" 
+                                        Command="{Binding $parent[UserControl].((vm:CashierViewModel)DataContext).RemoveFromCartCommand}" 
+                                        CommandParameter="{Binding}"
+                                        Background="Transparent" Foreground="#ff4d4d"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <StackPanel Grid.Row="2" Spacing="15" Margin="0 15 0 0">
+                    <Separator Background="#2d2d2d"/>
+                    
+                    <ToggleSwitch Content="Delivery Order" IsChecked="{Binding IsDelivery}" Foreground="White" OffContent="No" OnContent="Yes"/>
+                    
+                    <TextBox Watermark="Enter Delivery Address" 
+                             Text="{Binding DeliveryAddress}"
+                             IsVisible="{Binding IsDelivery}" 
+                             Height="60" TextWrapping="Wrap"/>
+
+                    <Grid ColumnDefinitions="*, Auto">
+                        <TextBlock Text="Total Amount:" FontSize="18" FontWeight="Bold" Foreground="White"/>
+                        <TextBlock Grid.Column="1" Text="{Binding CartTotal, StringFormat='${0:F2}'}" FontSize="18" FontWeight="Bold" Foreground="#ff9f43"/>
+                    </Grid>
+
+                    <TextBlock Text="{Binding StatusMessage}" Foreground="#4cd137" FontSize="12" HorizontalAlignment="Center" TextWrapping="Wrap" FontWeight="Medium"/>
+
+                    <Button Content="Place Order &amp; Pay" 
+                            Command="{Binding PlaceOrderCommand}"
+                            Background="#ff9f43" Foreground="White" FontWeight="Bold" FontSize="16" Padding="12"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" CornerRadius="6"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

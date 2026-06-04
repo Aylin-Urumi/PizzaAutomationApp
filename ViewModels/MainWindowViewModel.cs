@@ -1,4 +1,5 @@
-﻿
+﻿using System;
+
 namespace PizzaApp.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase
@@ -7,7 +8,6 @@ public class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel()
     {
-        // Boot up into the login screen and pass it a method to run on success
         _currentPage = CreateLoginScreen();
     }
 
@@ -21,12 +21,22 @@ public class MainWindowViewModel : ViewModelBase
     {
         return new LoginViewModel(role =>
         {
-            // When login succeeds, swap out the page to a dashboard view!
-            CurrentPage = new DashboardViewModel(role, () =>
+            // If a Cashier logs in, send them straight to the custom Cashier POS screen!
+            if (role == "Cashier")
             {
-                // When they click logout inside the dashboard, loop back here
-                CurrentPage = CreateLoginScreen();
-            });
+                CurrentPage = new CashierViewModel(() => 
+                {
+                    // If they click log out, bring them back to the login screen
+                    CurrentPage = CreateLoginScreen();
+                });
+            }
+            else
+            {
+                // Fallback placeholder for other roles (Manager, Chef, Driver) for now
+                CurrentPage = new DashboardViewModel(role, () => {
+                    CurrentPage = CreateLoginScreen();
+                });
+            }
         });
     }
 }
