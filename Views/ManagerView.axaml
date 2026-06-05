@@ -20,19 +20,37 @@
                 
                 <TabItem Header="Sales Metrics" Foreground="White" FontSize="14">
                     <Grid RowDefinitions="Auto, *" Margin="0,15,0,0">
-                        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="20" Margin="0,0,0,20">
-                            <Border Background="#1e1e1e" CornerRadius="8" Padding="20" Width="200" BorderBrush="#2d2d2d" BorderThickness="1">
+                        
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="15" Margin="0,0,0,20">
+                            
+                            <Border Background="#1e1e1e" CornerRadius="8" Padding="15" Width="195" BorderBrush="#2d2d2d" BorderThickness="1">
                                 <StackPanel Spacing="5">
-                                    <TextBlock Text="Gross Sales Total" Foreground="#a0a0a0" FontSize="13"/>
-                                    <TextBlock Text="{Binding TotalSales, StringFormat='${0:F2}'}" Foreground="#4cd137" FontSize="22" FontWeight="Bold"/>
+                                    <TextBlock Text="Gross Sales Total" Foreground="#a0a0a0" FontSize="12"/>
+                                    <TextBlock Text="{Binding TotalSales, StringFormat='${0:F2}'}" Foreground="#00d2d3" FontSize="20" FontWeight="Bold"/>
                                 </StackPanel>
                             </Border>
-                            <Border Background="#1e1e1e" CornerRadius="8" Padding="20" Width="200" BorderBrush="#2d2d2d" BorderThickness="1">
+
+                            <Border Background="#1e1e1e" CornerRadius="8" Padding="15" Width="195" BorderBrush="#4cd137" BorderThickness="1">
                                 <StackPanel Spacing="5">
-                                    <TextBlock Text="Total Orders Logged" Foreground="#a0a0a0" FontSize="13"/>
-                                    <TextBlock Text="{Binding TotalOrdersCount}" Foreground="#ff9f43" FontSize="22" FontWeight="Bold"/>
+                                    <TextBlock Text="💰 Today's Revenue" Foreground="#a0a0a0" FontSize="12"/>
+                                    <TextBlock Text="{Binding DailyRevenue, StringFormat='${0:F2}'}" Foreground="#4cd137" FontSize="20" FontWeight="Bold"/>
                                 </StackPanel>
                             </Border>
+
+                            <Border Background="#1e1e1e" CornerRadius="8" Padding="15" Width="195" BorderBrush="#ff9f43" BorderThickness="1">
+                                <StackPanel Spacing="5">
+                                    <TextBlock Text="📈 Monthly Revenue" Foreground="#a0a0a0" FontSize="12"/>
+                                    <TextBlock Text="{Binding MonthlyRevenue, StringFormat='${0:F2}'}" Foreground="#ff9f43" FontSize="20" FontWeight="Bold"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Background="#1e1e1e" CornerRadius="8" Padding="15" Width="195" BorderBrush="#2d2d2d" BorderThickness="1">
+                                <StackPanel Spacing="5">
+                                    <TextBlock Text="Total Orders Logged" Foreground="#a0a0a0" FontSize="12"/>
+                                    <TextBlock Text="{Binding TotalOrdersCount}" Foreground="#ffffff" FontSize="20" FontWeight="Bold"/>
+                                </StackPanel>
+                            </Border>
+                            
                         </StackPanel>
 
                         <Border Grid.Row="1" Background="#1c1c1c" CornerRadius="8" Padding="15" BorderBrush="#2d2d2d" BorderThickness="1">

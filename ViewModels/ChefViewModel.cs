@@ -92,15 +92,26 @@ public partial class ChefViewModel : ViewModelBase, IRecipient<OrderChangedMessa
                     }
                     else if (dbOrder.Status == OrderStatus.Cooking)
                     {
-                        dbOrder.Status = OrderStatus.Ready;
-                        ChefStatusMessage = $"🍕 Order #{order.Id} is ready for pickup/delivery!";
+                        // FIX: Check if it requires a driver. 
+                        // If it's delivery, mark it Ready so drivers can see it.
+                        // If it's takeout (Counter), mark it Completed immediately!
+                        if (dbOrder.Type == OrderType.Delivery)
+                        {
+                            dbOrder.Status = OrderStatus.Ready;
+                            ChefStatusMessage = $"🍕 Delivery Order #{order.Id} is ready for dispatch!";
+                        }
+                        else
+                        {
+                            dbOrder.Status = OrderStatus.Completed;
+                            ChefStatusMessage = $"✅ Takeout Order #{order.Id} has been picked up & finalized!";
+                        }
                     }
 
                     context.SaveChanges();
                 }
             }
 
-            // Broadcast the state update globally across the application so the delivery monitor refreshes instantly
+            // Broadcast the state update globally across the application
             WeakReferenceMessenger.Default.Send(new OrderChangedMessage());
         }
         catch (Exception ex)

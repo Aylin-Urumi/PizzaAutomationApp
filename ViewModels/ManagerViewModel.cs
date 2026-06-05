@@ -15,6 +15,9 @@ public partial class ManagerViewModel : ViewModelBase
 
     // Analytics Properties
     [ObservableProperty] private decimal _totalSales;
+    [ObservableProperty] private decimal _dailyRevenue;
+    [ObservableProperty] private decimal _monthlyRevenue;
+
     [ObservableProperty] private int _totalOrdersCount;
     [ObservableProperty] private ObservableCollection<Order> _recentOrders = new();
 
@@ -23,7 +26,7 @@ public partial class ManagerViewModel : ViewModelBase
     [ObservableProperty] private string _newWorkerUsername = string.Empty;
     [ObservableProperty] private string _newWorkerPassword = string.Empty;
     [ObservableProperty] private string _newWorkerRole = "Cashier"; // Default selection
-    
+
     public string[] AvailableRoles => new[] { "Cashier", "Chef", "Driver" };
 
     // Customer Feedback Properties
@@ -50,6 +53,19 @@ public partial class ManagerViewModel : ViewModelBase
             RecentOrders = new ObservableCollection<Order>(ordersList);
             TotalSales = ordersList.Sum(o => o.TotalAmount);
             TotalOrdersCount = ordersList.Count;
+
+            // NEW: Get current date parameters for processing daily and monthly sales
+            var today = DateTime.Today;
+
+            // Calculate Daily Revenue (Matching today's exact date stamp)
+            DailyRevenue = ordersList
+                .Where(o => o.OrderDate.Date == today)
+                .Sum(o => o.TotalAmount);
+
+            // Calculate Monthly Revenue (Matching current month and current year)
+            MonthlyRevenue = ordersList
+                .Where(o => o.OrderDate.Month == today.Month && o.OrderDate.Year == today.Year)
+                .Sum(o => o.TotalAmount);
 
             // 2. Load Staff Roster (Excluding the Manager to prevent accidental self-deletion)
             var usersList = context.Users.Where(u => u.Role != "Manager").ToList();
