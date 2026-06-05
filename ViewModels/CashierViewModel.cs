@@ -117,6 +117,7 @@ public partial class CashierViewModel : ViewModelBase
     [RelayCommand]
     private void PlaceOrder()
     {
+        // Your safety checks are already perfect - keep them exactly as they are!
         if (!Cart.Any())
         {
             StatusMessage = "❌ Cannot place an empty order!";
@@ -136,7 +137,6 @@ public partial class CashierViewModel : ViewModelBase
                 StatusMessage = "❌ Please enter Address and Phone Number for Delivery!";
                 return;
             }
-            // NEW Validation Check: Enforce picking a delivery specialist
             if (SelectedDriver == null)
             {
                 StatusMessage = "❌ Please assign a delivery guy to this order!";
@@ -157,8 +157,6 @@ public partial class CashierViewModel : ViewModelBase
                     DeliveryAddress = IsDelivery ? DeliveryAddress.Trim() : null,
                     TotalAmount = CartTotal,
                     IsPaid = true,
-                    
-                    // NEW: Persists selected courier link variable down into storage context
                     AssignedDriverId = IsDelivery ? SelectedDriver?.Id : null
                 };
 
@@ -168,11 +166,11 @@ public partial class CashierViewModel : ViewModelBase
                     {
                         ProductId = cartItem.Product.Id,
                         Quantity = cartItem.Quantity,
-                        PriceAtPurchase = cartItem.ComputedPrice, 
+                        PriceAtPurchase = cartItem.ComputedPrice,
                         Size = cartItem.Product.Category == "Pizza" ? cartItem.Size : "N/A",
                         Crust = cartItem.Product.Category == "Pizza" ? cartItem.Crust : "N/A",
-                        Toppings = cartItem.Product.Category == "Pizza" 
-                            ? string.Join(", ", cartItem.ToppingOptions.Where(t => t.IsSelected).Select(t => t.Name)) 
+                        Toppings = cartItem.Product.Category == "Pizza"
+                            ? string.Join(", ", cartItem.ToppingOptions.Where(t => t.IsSelected).Select(t => t.Name))
                             : ""
                     };
                     newOrder.Items.Add(orderItem);
@@ -183,14 +181,18 @@ public partial class CashierViewModel : ViewModelBase
                 CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new OrderChangedMessage());
             }
 
+            // TWEAKED FOR THE VISUAL RECEIPT:
+            // We clear the basket items, but we leave CustomerName and CartTotal alone 
+            // for a moment so the receipt UI can display the summary of the transaction.
             Cart.Clear();
-            CustomerName = string.Empty;
+
+            // These fields clear safely out of view if IsDelivery switches down
             PhoneNumber = string.Empty;
             DeliveryAddress = string.Empty;
             IsDelivery = false;
-            SelectedDriver = null; // Clear assignment selector
-            CartTotal = 0.00m;
-            StatusMessage = "🎉 Order placed successfully and routed to assigned screen!";
+            SelectedDriver = null;
+
+            StatusMessage = "🎉 Order placed successfully and printed to receipt summary!";
         }
         catch (Exception ex)
         {
@@ -249,7 +251,7 @@ public partial class OrderItemViewModel : ObservableObject
 {
     private readonly Action _onChanged;
     public Product Product { get; }
-    
+
     [ObservableProperty] private int _quantity = 1;
     [ObservableProperty] private string _size = "Medium";
     [ObservableProperty] private string _crust = "Thin";

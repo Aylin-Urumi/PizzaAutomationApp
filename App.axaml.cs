@@ -19,11 +19,8 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        
-        using (var context = new AppDbContext())
-        {
-            context.Database.EnsureCreated();
-        }
+        // MERGED: Out with the old blank context block, in with the automatic seeder!
+        DatabaseSeeder.Seed();
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {

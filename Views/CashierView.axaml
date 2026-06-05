@@ -8,14 +8,14 @@
     <Grid ColumnDefinitions="*, 400" Background="#141414">
         
         <Grid Grid.Column="0" RowDefinitions="Auto, *" Margin="20">
-            <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Margin="0 0 0 15">
+            <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Margin="0,0,0,15">
                 <TextBlock Text="🍕 CASHIER ORDER TERMINAL" FontSize="22" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
-                <Button Grid.Column="1" Content="Log Out" Command="{Binding LogoutCommand}" Background="#ff4d4d" Foreground="White" Padding="14 7" CornerRadius="5"/>
+                <Button Grid.Column="1" Content="Log Out" Command="{Binding LogoutCommand}" Background="#ff4d4d" Foreground="White" Padding="14,7" CornerRadius="5"/>
             </Grid>
 
             <TabControl Grid.Row="1">
                 <TabItem Header="Pizzas" Foreground="White" FontSize="16">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0 10 0 0">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,10,0,0">
                         <ItemsControl ItemsSource="{Binding PizzaMenu}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate><WrapPanel Orientation="Horizontal"/></ItemsPanelTemplate>
@@ -23,7 +23,7 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="models:Product">
                                     <Button Command="{Binding $parent[UserControl].((vm:CashierViewModel)DataContext).AddToCartCommand}" CommandParameter="{Binding}"
-                                            Width="160" Height="110" Margin="0 0 12 12" Background="#1e1e1e" CornerRadius="8">
+                                            Width="160" Height="110" Margin="0,0,12,12" Background="#1e1e1e" CornerRadius="8">
                                         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="6">
                                             <TextBlock Text="{Binding Name}" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" FontSize="13"/>
                                             <TextBlock Text="{Binding Price, StringFormat='${0:F2}'}" Foreground="#ff9f43" FontWeight="SemiBold" HorizontalAlignment="Center" FontSize="13"/>
@@ -36,7 +36,7 @@
                 </TabItem>
 
                 <TabItem Header="Beverages" Foreground="White" FontSize="16">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0 10 0 0">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,10,0,0">
                         <ItemsControl ItemsSource="{Binding DrinkMenu}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate><WrapPanel Orientation="Horizontal"/></ItemsPanelTemplate>
@@ -44,7 +44,7 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="models:Product">
                                     <Button Command="{Binding $parent[UserControl].((vm:CashierViewModel)DataContext).AddToCartCommand}" CommandParameter="{Binding}"
-                                            Width="160" Height="110" Margin="0 0 12 12" Background="#1e1e1e" CornerRadius="8">
+                                            Width="160" Height="110" Margin="0,0,12,12" Background="#1e1e1e" CornerRadius="8">
                                         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="6">
                                             <TextBlock Text="{Binding Name}" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" FontSize="13"/>
                                             <TextBlock Text="{Binding Price, StringFormat='${0:F2}'}" Foreground="#ff9f43" FontWeight="SemiBold" HorizontalAlignment="Center" FontSize="13"/>
@@ -58,26 +58,26 @@
             </TabControl>
         </Grid>
 
-        <Border Grid.Column="1" Background="#1c1c1c" BorderBrush="#2d2d2d" BorderThickness="1 0 0 0" Padding="15">
+        <Border Grid.Column="1" Background="#1c1c1c" BorderBrush="#2d2d2d" BorderThickness="1,0,0,0" Padding="15">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <Grid RowDefinitions="Auto, *, Auto">
                     
-                    <TextBlock Grid.Row="0" Text="🛒 Active Basket" FontSize="18" FontWeight="Bold" Foreground="White" Margin="0 0 0 10"/>
+                    <TextBlock Grid.Row="0" Text="🛒 Active Basket" FontSize="18" FontWeight="Bold" Foreground="White" Margin="0,0,0,10"/>
 
-                    <ListBox Grid.Row="1" ItemsSource="{Binding Cart}" Background="Transparent" BorderThickness="0" MinHeight="180" MaxHeight="300" Margin="0 0 0 10">
+                    <ListBox Grid.Row="1" ItemsSource="{Binding Cart}" Background="Transparent" BorderThickness="0" MinHeight="180" MaxHeight="300" Margin="0,0,0,10">
                         <ListBox.ItemTemplate>
                             <DataTemplate x:DataType="vm:OrderItemViewModel">
-                                <Grid ColumnDefinitions="*, Auto" Margin="0 6">
+                                <Grid ColumnDefinitions="*, Auto" Margin="0,6">
                                     <StackPanel Grid.Column="0" Spacing="5">
                                         <TextBlock Text="{Binding Product.Name}" Foreground="White" FontWeight="Medium" TextWrapping="Wrap" FontSize="13"/>
                                         <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding IsPizza}">
                                             <ComboBox ItemsSource="{Binding Sizes}" SelectedItem="{Binding Size}" Width="90" Height="28" FontSize="11" Background="#2d2d2d" Foreground="White"/>
                                             <ComboBox ItemsSource="{Binding Crusts}" SelectedItem="{Binding Crust}" Width="105" Height="28" FontSize="11" Background="#2d2d2d" Foreground="White"/>
                                         </StackPanel>
-                                        <ItemsControl ItemsSource="{Binding ToppingOptions}" IsVisible="{Binding IsPizza}" Margin="0 2 0 0">
+                                        <ItemsControl ItemsSource="{Binding ToppingOptions}" IsVisible="{Binding IsPizza}" Margin="0,2,0,0">
                                             <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                             <ItemsControl.ItemTemplate>
-                                                <DataTemplate><CheckBox IsChecked="{Binding IsSelected}" Content="{Binding Name}" Margin="0 0 8 2" FontSize="10" Foreground="#aaaaaa" MinHeight="18"/></DataTemplate>
+                                                <DataTemplate><CheckBox IsChecked="{Binding IsSelected}" Content="{Binding Name}" Margin="0,0,8,2" FontSize="10" Foreground="#aaaaaa" MinHeight="18"/></DataTemplate>
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>
                                         <TextBlock Text="{Binding ComputedPrice, StringFormat='${0:F2} each'}" Foreground="#888888" FontSize="11"/>
@@ -92,16 +92,17 @@
                     </ListBox>
 
                     <StackPanel Grid.Row="2" Spacing="10">
-                        <Separator Background="#2d2d2d" Margin="0 0 0 5"/>
+                        <Separator Background="#2d2d2d" Margin="0,0,0,5"/>
                         
-                        <TextBox Watermark="Customer Name (Required)" Text="{Binding CustomerName}" Background="#2d2d2d" Foreground="White" CaretBrush="White" BorderBrush="#555555" Padding="10 8"/>
+                        <TextBox PlaceholderText="Customer Name (Required)" Text="{Binding CustomerName}" Background="#252525" Foreground="White" CaretBrush="White" BorderBrush="#444444" Padding="10,8"/>
+                        
                         <ToggleSwitch Content="Delivery Order" IsChecked="{Binding IsDelivery}" Foreground="White" OffContent="No" OnContent="Yes"/>
                         
-                        <TextBox Watermark="Customer Phone Number" Text="{Binding PhoneNumber}" IsVisible="{Binding IsDelivery}" Background="#2d2d2d" Foreground="White" CaretBrush="White" BorderBrush="#555555" Padding="10 8"/>
-                        <TextBox Watermark="Enter Delivery Address" Text="{Binding DeliveryAddress}" IsVisible="{Binding IsDelivery}" Height="55" TextWrapping="Wrap" Background="#2d2d2d" Foreground="White" CaretBrush="White" BorderBrush="#555555" Padding="10 8"/>
+                        <TextBox PlaceholderText="Customer Phone Number" Text="{Binding PhoneNumber}" IsVisible="{Binding IsDelivery}" Background="#252525" Foreground="White" CaretBrush="White" BorderBrush="#444444" Padding="10,8"/>
+                        <TextBox PlaceholderText="Enter Delivery Address" Text="{Binding DeliveryAddress}" IsVisible="{Binding IsDelivery}" Height="55" TextWrapping="Wrap" Background="#252525" Foreground="White" CaretBrush="White" BorderBrush="#444444" Padding="10,8"/>
 
-                        <TextBlock Text="Assign Delivery Personnel:" Foreground="#ff9f43" FontSize="12" FontWeight="SemiBold" IsVisible="{Binding IsDelivery}" Margin="0 4 0 0"/>
-                        <ComboBox ItemsSource="{Binding Drivers}" SelectedItem="{Binding SelectedDriver}" IsVisible="{Binding IsDelivery}" HorizontalAlignment="Stretch" Padding="10 8" Background="#2d2d2d" Foreground="White">
+                        <TextBlock Text="Assign Delivery Personnel:" Foreground="#ff9f43" FontSize="12" FontWeight="SemiBold" IsVisible="{Binding IsDelivery}" Margin="0,4,0,0"/>
+                        <ComboBox ItemsSource="{Binding Drivers}" SelectedItem="{Binding SelectedDriver}" IsVisible="{Binding IsDelivery}" HorizontalAlignment="Stretch" Padding="10,8" Background="#2d2d2d" Foreground="White">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate x:DataType="models:User">
                                     <TextBlock Text="{Binding Username}" Foreground="White"/>
@@ -109,19 +110,56 @@
                             </ComboBox.ItemTemplate>
                         </ComboBox>
 
-                        <Grid ColumnDefinitions="*, Auto" Margin="0 4 0 0">
+                        <Grid ColumnDefinitions="*, Auto" Margin="0,4,0,0">
                             <TextBlock Text="Total Amount:" FontSize="16" FontWeight="Bold" Foreground="White"/>
                             <TextBlock Grid.Column="1" Text="{Binding CartTotal, StringFormat='${0:F2}'}" FontSize="18" FontWeight="Bold" Foreground="#ff9f43"/>
                         </Grid>
                         
                         <TextBlock Text="{Binding StatusMessage}" Foreground="#4cd137" FontSize="12" HorizontalAlignment="Center" TextWrapping="Wrap" FontWeight="Medium" TextAlignment="Center"/>
+                        
                         <Button Content="Place Order &amp; Pay" Command="{Binding PlaceOrderCommand}" Background="#ff9f43" Foreground="White" FontWeight="Bold" FontSize="15" Padding="11" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" CornerRadius="6"/>
 
-                        <Border Margin="0 15 0 0" Background="#252525" CornerRadius="6" Padding="12" BorderBrush="#3a3a3a" BorderThickness="1">
+                        <Border Margin="0,10,0,0" Background="#111111" BorderBrush="#ff9f43" BorderThickness="1" CornerRadius="6" Padding="12">
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="🧾 OFFICIAL RECEIPTS SUMMARY" FontSize="12" FontWeight="Bold" Foreground="#ff9f43" HorizontalAlignment="Center"/>
+                                <TextBlock Text="---------------------------------------" Foreground="#444444" HorizontalAlignment="Center"/>
+                                
+                                <Grid ColumnDefinitions="Auto, *">
+                                    <TextBlock Grid.Column="0" Text="Client: " Foreground="#888888" FontSize="12"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding CustomerName}" Foreground="White" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right"/>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="Auto, *">
+                                    <TextBlock Grid.Column="0" Text="Type: " Foreground="#888888" FontSize="12"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding SelectedDriver, Converter={x:Null}, StringFormat='Delivery'}" Foreground="White" FontSize="12" HorizontalAlignment="Right"/>
+                                </Grid>
+
+                                <TextBlock Text="- - - - - - - - - - - - - - - - - - - -" Foreground="#333333" HorizontalAlignment="Center"/>
+
+                                <Grid ColumnDefinitions="Auto, *">
+                                    <TextBlock Grid.Column="0" Text="Items Subtotal:" Foreground="#aaaaaa" FontSize="12"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding CartTotal, StringFormat='${0:F2}'}" Foreground="White" FontSize="12" HorizontalAlignment="Right"/>
+                                </Grid>
+                                
+                                <Grid ColumnDefinitions="Auto, *">
+                                    <TextBlock Grid.Column="0" Text="Est. Sales Tax (8%):" Foreground="#aaaaaa" FontSize="12"/>
+                                    <TextBlock Grid.Column="1" Text="Calculated at Checkout" Foreground="#888888" FontSize="11" FontStyle="Italic" HorizontalAlignment="Right"/>
+                                </Grid>
+
+                                <Separator Background="#444444" Height="1" Margin="0,4"/>
+
+                                <Grid ColumnDefinitions="Auto, *">
+                                    <TextBlock Grid.Column="0" Text="TOTAL CHARGED:" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding CartTotal, StringFormat='${0:F2}'}" Foreground="#4cd137" FontWeight="Bold" FontSize="14" HorizontalAlignment="Right"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Margin="0,15,0,0" Background="#252525" CornerRadius="6" Padding="12" BorderBrush="#3a3a3a" BorderThickness="1">
                             <StackPanel Spacing="8">
                                 <TextBlock Text="📝 Log Customer Feedback" FontSize="14" FontWeight="Bold" Foreground="White"/>
-                                <TextBox Watermark="Customer Name" Text="{Binding FeedbackCustomerName}" Background="#1c1c1c" Foreground="White" BorderBrush="#444" Padding="8 6" FontSize="12"/>
-                                <TextBox Watermark="Feedback/Complaint/Details..." Text="{Binding FeedbackDetails}" Height="60" TextWrapping="Wrap" Background="#1c1c1c" Foreground="White" BorderBrush="#444" Padding="8 6" FontSize="12"/>
+                                <TextBox PlaceholderText="Customer Name" Text="{Binding FeedbackCustomerName}" Background="#1c1c1c" Foreground="White" CaretBrush="White" BorderBrush="#444444" Padding="8,6" FontSize="12"/>
+                                <TextBox PlaceholderText="Feedback/Complaint/Details..." Text="{Binding FeedbackDetails}" Height="60" TextWrapping="Wrap" Background="#1c1c1c" Foreground="White" CaretBrush="White" BorderBrush="#444444" Padding="8,6" FontSize="12"/>
                                 <Button Content="Submit Feedback" Command="{Binding SubmitFeedbackCommand}" Background="#444444" Foreground="White" FontSize="12" Padding="6" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" CornerRadius="4"/>
                             </StackPanel>
                         </Border>
