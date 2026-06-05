@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using PizzaApp.Data;
 using PizzaApp.Models;
 
@@ -38,28 +39,45 @@ public partial class CashierViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isDelivery;
 
-    // Filtered sub-menus mapped directly to the UI tabs
+    [ObservableProperty]
+    private ObservableCollection<User> _drivers = new();
+
+    [ObservableProperty]
+    private User? _selectedDriver;
+
+    [ObservableProperty]
+    private string _feedbackCustomerName = string.Empty;
+
+    [ObservableProperty]
+    private string _feedbackDetails = string.Empty;
+
     public IEnumerable<Product> PizzaMenu => Products.Where(p => p.Category == "Pizza");
     public IEnumerable<Product> DrinkMenu => Products.Where(p => p.Category == "Drinks" || p.Category == "Drink");
 
     public CashierViewModel(Action onLogout)
     {
         _onLogoutAction = onLogout;
-        LoadProducts();
+        LoadInitialData();
     }
 
     [RelayCommand]
     private void Logout() => _onLogoutAction?.Invoke();
 
-    private void LoadProducts()
+    private void LoadInitialData()
     {
         using (var context = new AppDbContext())
         {
+            // Load standard menu items
             var productList = context.Products.ToList();
             Products = new ObservableCollection<Product>(productList);
+
+            // NEW: Fetch all user accounts registered under the "Driver" or "Delivery" roles
+            var driverList = context.Users
+                .Where(u => u.Role == "Driver" || u.Role == "Delivery")
+                .ToList();
+            Drivers = new ObservableCollection<User>(driverList);
         }
 
-        // Notify rendering pipeline that sub-categories are populated
         OnPropertyChanged(nameof(PizzaMenu));
         OnPropertyChanged(nameof(DrinkMenu));
     }
@@ -68,22 +86,18 @@ public partial class CashierViewModel : ViewModelBase
     private void AddToCart(Product product)
     {
         StatusMessage = string.Empty;
-
-        // Pizzas always bypass grouping to allow unique topping/crust combinations
         if (product.Category == "Pizza")
         {
             Cart.Add(new OrderItemViewModel(product, RecalculateTotal));
         }
         else
         {
-            // Beverages group seamlessly on matching IDs
             var existingItem = Cart.FirstOrDefault(item => item.Product.Id == product.Id);
             if (existingItem != null)
                 existingItem.Quantity++;
             else
                 Cart.Add(new OrderItemViewModel(product, RecalculateTotal));
         }
-
         RecalculateTotal();
     }
 
@@ -115,17 +129,25 @@ public partial class CashierViewModel : ViewModelBase
             return;
         }
 
-        if (IsDelivery && (string.IsNullOrWhiteSpace(DeliveryAddress) || string.IsNullOrWhiteSpace(PhoneNumber)))
+        if (IsDelivery)
         {
-            StatusMessage = "❌ Please enter Address and Phone Number for Delivery!";
-            return;
+            if (string.IsNullOrWhiteSpace(DeliveryAddress) || string.IsNullOrWhiteSpace(PhoneNumber))
+            {
+                StatusMessage = "❌ Please enter Address and Phone Number for Delivery!";
+                return;
+            }
+            // NEW Validation Check: Enforce picking a delivery specialist
+            if (SelectedDriver == null)
+            {
+                StatusMessage = "❌ Please assign a delivery guy to this order!";
+                return;
+            }
         }
 
         try
         {
             using (var context = new AppDbContext())
             {
-                // 1. Create the master order record
                 var newOrder = new Order
                 {
                     Type = IsDelivery ? OrderType.Delivery : OrderType.Counter,
@@ -134,46 +156,80 @@ public partial class CashierViewModel : ViewModelBase
                     PhoneNumber = IsDelivery ? PhoneNumber.Trim() : null,
                     DeliveryAddress = IsDelivery ? DeliveryAddress.Trim() : null,
                     TotalAmount = CartTotal,
-                    IsPaid = true
+                    IsPaid = true,
+                    
+                    // NEW: Persists selected courier link variable down into storage context
+                    AssignedDriverId = IsDelivery ? SelectedDriver?.Id : null
                 };
 
-                // 2. Map basket directly into the Order's item collection
                 foreach (var cartItem in Cart)
                 {
                     var orderItem = new OrderItem
                     {
                         ProductId = cartItem.Product.Id,
                         Quantity = cartItem.Quantity,
-                        PriceAtPurchase = cartItem.ComputedPrice,
+                        PriceAtPurchase = cartItem.ComputedPrice, 
                         Size = cartItem.Product.Category == "Pizza" ? cartItem.Size : "N/A",
                         Crust = cartItem.Product.Category == "Pizza" ? cartItem.Crust : "N/A",
-                        Toppings = cartItem.Product.Category == "Pizza"
-                            ? string.Join(", ", cartItem.ToppingOptions.Where(t => t.IsSelected).Select(t => t.Name))
+                        Toppings = cartItem.Product.Category == "Pizza" 
+                            ? string.Join(", ", cartItem.ToppingOptions.Where(t => t.IsSelected).Select(t => t.Name)) 
                             : ""
                     };
-
-                    // EF Core links relationship details automatically via navigation lists
                     newOrder.Items.Add(orderItem);
                 }
 
-                // 3. Save the entire tree transaction at once
                 context.Orders.Add(newOrder);
                 context.SaveChanges();
+                CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new OrderChangedMessage());
             }
 
-            // Reset UI inputs upon execution success
             Cart.Clear();
             CustomerName = string.Empty;
             PhoneNumber = string.Empty;
             DeliveryAddress = string.Empty;
             IsDelivery = false;
+            SelectedDriver = null; // Clear assignment selector
             CartTotal = 0.00m;
-            StatusMessage = "🎉 Order placed successfully and sent to the kitchen!";
+            StatusMessage = "🎉 Order placed successfully and routed to assigned screen!";
         }
         catch (Exception ex)
         {
-            // Catches any schema bugs and renders them clearly on screen instead of crashing
             StatusMessage = $"❌ Database Error: {ex.Message}";
+        }
+    }
+
+    // NEW: Action command letting cashier submit customer reviews into database table log directly
+    [RelayCommand]
+    private void SubmitFeedback()
+    {
+        if (string.IsNullOrWhiteSpace(FeedbackCustomerName) || string.IsNullOrWhiteSpace(FeedbackDetails))
+        {
+            StatusMessage = "❌ Please fill in both Customer Name and Feedback Details fields!";
+            return;
+        }
+
+        try
+        {
+            using (var context = new AppDbContext())
+            {
+                var feedbackEntry = new CustomerFeedback
+                {
+                    CustomerName = FeedbackCustomerName.Trim(),
+                    Details = FeedbackDetails.Trim(),
+                    DateSubmitted = DateTime.Now
+                };
+
+                context.CustomerFeedbacks.Add(feedbackEntry);
+                context.SaveChanges();
+            }
+
+            FeedbackCustomerName = string.Empty;
+            FeedbackDetails = string.Empty;
+            StatusMessage = "💖 Feedback captured securely for Manager analysis!";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"❌ Feedback Error: {ex.Message}";
         }
     }
 
@@ -183,15 +239,17 @@ public partial class CashierViewModel : ViewModelBase
         {
             PhoneNumber = string.Empty;
             DeliveryAddress = string.Empty;
+            SelectedDriver = null;
         }
     }
 }
 
+// (The OrderItemViewModel and ToppingItem child classes remain completely identical underneath)
 public partial class OrderItemViewModel : ObservableObject
 {
     private readonly Action _onChanged;
     public Product Product { get; }
-
+    
     [ObservableProperty] private int _quantity = 1;
     [ObservableProperty] private string _size = "Medium";
     [ObservableProperty] private string _crust = "Thin";

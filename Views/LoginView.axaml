@@ -32,7 +32,7 @@
                     <TextBox Text="{Binding PinCode}"
                              PasswordChar="*" 
                              MaxLength="4"
-                             Watermark="PIN Code"
+                             PlaceholderText="PIN Code"
                              FontSize="22" 
                              HorizontalContentAlignment="Center"/>
                 </StackPanel>

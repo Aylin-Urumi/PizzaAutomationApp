@@ -20,6 +20,7 @@ public class Order
     public decimal TotalAmount { get; set; }
     public bool IsPaid { get; set; } = true;
 
-    // Entity Framework navigation collection
+    public int? AssignedDriverId { get; set; }
+
     public List<OrderItem> Items { get; set; } = new();
 }

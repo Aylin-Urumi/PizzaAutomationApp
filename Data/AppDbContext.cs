@@ -10,7 +10,8 @@ public class AppDbContext : DbContext
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
 
-    // NEW: This constructor guarantees SQLite creates tables matching our models
+    public DbSet<CustomerFeedback> CustomerFeedbacks { get; set; } = null!;
+
     public AppDbContext()
     {
         Database.EnsureCreated();
@@ -25,7 +26,6 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // 1. Seed our staff user accounts
         modelBuilder.Entity<User>().HasData(
             new User { Id = 1, Username = "manager", PinCode = "1111", Role = "Manager" },
             new User { Id = 2, Username = "cashier1", PinCode = "2222", Role = "Cashier" },
@@ -33,7 +33,6 @@ public class AppDbContext : DbContext
             new User { Id = 4, Username = "driver1", PinCode = "4444", Role = "Driver" }
         );
 
-        // 2. Seed our initial 3 Pizzas and 3 Drinks
         modelBuilder.Entity<Product>().HasData(
             new Product { Id = 1, Name = "Margherita Pizza", Price = 10.99m, Category = "Pizza" },
             new Product { Id = 2, Name = "Pepperoni Pizza", Price = 12.99m, Category = "Pizza" },

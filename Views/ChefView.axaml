@@ -4,71 +4,91 @@
              xmlns:models="using:PizzaApp.Models"
              x:Class="PizzaApp.Views.ChefView"
              x:DataType="vm:ChefViewModel">
-    
-    <Grid RowDefinitions="Auto, *" Background="#141414">
-        <!-- Top Title Bar -->
-        <Grid Grid.Row="0" ColumnDefinitions="*, Auto, Auto" Margin="20 20 20 15">
-            <TextBlock Text="👨‍🍳 KITCHEN DISPLAY SYSTEM (KDS)" FontSize="24" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
-            <Button Grid.Column="1" Content="🔄 Refresh Tickets" Command="{Binding LoadOrdersCommand}" Background="#222222" Foreground="White" Margin="0 0 10 0" Padding="15 8" CornerRadius="5"/>
-            <Button Grid.Column="2" Content="Log Out" Command="{Binding LogoutCommand}" Background="#ff4d4d" Foreground="White" Padding="15 8" CornerRadius="5"/>
-        </Grid>
 
-        <!-- Main Orders Wrap List -->
-        <ScrollViewer Grid.Row="1" Padding="15">
-            <ItemsControl ItemsSource="{Binding PendingOrders}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel Orientation="Horizontal"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="models:Order">
-                        <Border Background="#1e1e1e" Width="280" MinHeight="220" CornerRadius="10" Margin="10" Padding="15" BoxShadow="0 4 10 0 #000000">
-                            <Grid RowDefinitions="Auto, *, Auto">
-                                <!-- Order Header Details -->
-                                <!-- Order Header Details -->
-                                <StackPanel Grid.Row="0" Spacing="2">
-                                    <Grid ColumnDefinitions="*, Auto">
-                                        <TextBlock Text="{Binding Id, StringFormat='Ticket #{0}'}" FontSize="18" FontWeight="Bold" Foreground="#ff9f43"/>
-                                        <TextBlock Grid.Column="1" Text="{Binding Type}" FontSize="12" FontWeight="Bold" Foreground="#a0a0a0" VerticalAlignment="Center"/>
+    <Border Background="#121212" Padding="20">
+        <Grid RowDefinitions="Auto, *">
+            
+            <!-- KITCHEN HEADER STRIP -->
+            <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Margin="0,0,0,15">
+                <StackPanel Orientation="Horizontal" Spacing="15">
+                    <TextBlock Text="🍳 BACK-HOUSE KITCHEN MONITOR" FontSize="22" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                    <!-- FIXED: Swapped LoadOrdersCommand to LoadChefOrdersCommand -->
+                    <Button Content="🔄 Refresh Monitor" Command="{Binding LoadChefOrdersCommand}" Background="#2d2d2d" Foreground="White" Padding="10,5" FontSize="12" VerticalAlignment="Center"/>
+                </StackPanel>
+                <Button Grid.Column="1" Content="Log Out" Command="{Binding LogoutCommand}" Background="#ff4d4d" Foreground="White" Padding="14,7" CornerRadius="5"/>
+            </Grid>
+
+            <!-- ACTIVE ORDERS DISPATCH AREA -->
+            <Grid Grid.Row="1" RowDefinitions="Auto, *">
+                <TextBlock Grid.Row="0" Text="{Binding ChefStatusMessage}" Foreground="#4cd137" FontSize="13" Margin="0,0,0,10" HorizontalAlignment="Center" FontWeight="Medium"/>
+
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <!-- FIXED: Swapped PendingOrders to CookingOrders -->
+                    <ItemsControl ItemsSource="{Binding CookingOrders}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="models:Order">
+                                <Border Background="#1c1c1c" BorderBrush="#2d2d2d" BorderThickness="1" CornerRadius="8" Width="280" Margin="0,0,15,15" Padding="15">
+                                    <Grid RowDefinitions="Auto, *, Auto">
+                                        
+                                        <!-- Order Identification Line -->
+                                        <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Margin="0,0,0,10">
+                                            <TextBlock Text="{Binding Id, StringFormat='Order #{0}'}" Foreground="White" FontWeight="Bold" FontSize="16"/>
+                                            <Border Background="#2d2d2d" CornerRadius="4" Padding="6,3">
+                                                <TextBlock Text="{Binding Status}" Foreground="#ff9f43" FontSize="11" FontWeight="Bold"/>
+                                            </Border>
+                                        </Grid>
+
+                                        <!-- Itemized Menu Preparation Stack -->
+                                        <StackPanel Grid.Row="1" Spacing="5" Margin="0,0,0,15">
+                                            <ItemsControl ItemsSource="{Binding Items}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="models:OrderItem">
+                                                        <TextBlock Foreground="#dddddd" FontSize="13" FontWeight="Medium" TextWrapping="Wrap" Margin="0,2">
+                                                            <TextBlock.Text>
+                                                                <MultiBinding StringFormat="🔥 {0}x {1} ({2}, {3})">
+                                                                    <Binding Path="Quantity"/>
+                                                                    <Binding Path="Product.Name"/>
+                                                                    <Binding Path="Size"/>
+                                                                    <Binding Path="Crust"/>
+                                                                </MultiBinding>
+                                                            </TextBlock.Text>
+                                                        </TextBlock>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+
+                                        <!-- Kitchen Progress Flow Interaction Button -->
+                                        <!-- FIXED: Swapped CompleteCookingCommand to AdvanceStatusCommand -->
+                                        <Button Grid.Row="2" 
+                                                Command="{Binding $parent[UserControl].((vm:ChefViewModel)DataContext).AdvanceStatusCommand}" 
+                                                CommandParameter="{Binding}"
+                                                Background="#ff9f43" Foreground="White" FontWeight="Bold" FontSize="13" Padding="10" 
+                                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" CornerRadius="4">
+                                            <Button.Styles>
+                                                <Style Selector="Button">
+                                                    <Setter Property="Content" Value="👨‍🍳 Start Cooking"/>
+                                                </Style>
+                                                <Style Selector="Button[Content=Cooking]">
+                                                    <Setter Property="Content" Value="🍕 Order Ready for Pickup!"/>
+                                                    <Setter Property="Background" Value="#4cd137"/>
+                                                </Style>
+                                            </Button.Styles>
+                                        </Button>
+
                                     </Grid>
-                                    <!-- Displaying real customer name -->
-                                    <TextBlock Text="{Binding CustomerName, StringFormat='For: {0}'}" FontSize="14" FontWeight="SemiBold" Foreground="White" Margin="0 2"/>
-                                    <TextBlock Text="{Binding OrderDate, StringFormat='{}{0:HH:mm}'}" FontSize="11" Foreground="#777777"/>
-                                    <Separator Background="#2d2d2d" Margin="0 5"/>
-                                </StackPanel>
-
-                               <!-- Nested loop printing products, quantities, and newly added descriptors -->
-                               <ScrollViewer Grid.Row="1" Margin="0 5">
-                                   <ItemsControl ItemsSource="{Binding Items}">
-                                       <ItemsControl.ItemTemplate>
-                                           <DataTemplate x:DataType="models:OrderItem">
-                                               <Grid ColumnDefinitions="*, Auto" Margin="0 4">
-                                                   <StackPanel Grid.Column="0" Spacing="1">
-                                                       <TextBlock Text="{Binding Product.Name}" Foreground="White" TextWrapping="Wrap" FontSize="14" FontWeight="Medium"/>
-                                                       <!-- Prints out details cleanly like: Large - Stuffed Crust -->
-                                                       <TextBlock Text="{Binding Size, StringFormat='{}{0} • {1} Crust'}" 
-                                                                  Foreground="#a0a0a0" FontSize="12" 
-                                                                  IsVisible="{Binding Product.Category, StringFormat='{}{0}'}"/> 
-                                                   </StackPanel>
-                                                   <TextBlock Grid.Column="1" Text="{Binding Quantity, StringFormat='x{0}'}" Foreground="#ff9f43" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
-                                               </Grid>
-                                           </DataTemplate>
-                                       </ItemsControl.ItemTemplate>
-                                   </ItemsControl>
-                               </ScrollViewer>
-
-                                <!-- Interactive Action Buttons -->
-                                <Button Grid.Row="2" Content="✅ Done / Cooked" 
-                                        Command="{Binding $parent[UserControl].((vm:ChefViewModel)DataContext).CompleteCookingCommand}"
-                                        CommandParameter="{Binding}"
-                                        Background="#4cd137" Foreground="White" FontWeight="Bold" Padding="10"
-                                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" CornerRadius="5"/>
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
-    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+    </Border>
 </UserControl>

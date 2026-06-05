@@ -1,68 +1,111 @@
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using Microsoft.EntityFrameworkCore;
-using PizzaApp.Data;
-using PizzaApp.Models;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using PizzaApp.Data;
+using PizzaApp.Models;
 
 namespace PizzaApp.ViewModels;
 
-public partial class ChefViewModel : ViewModelBase
+// FIXED: Added the IRecipient interface implementation to satisfy the compiler and handle real-time kitchen syncs
+public partial class ChefViewModel : ViewModelBase, IRecipient<OrderChangedMessage>
 {
-    private readonly Action _onLogout;
+    private readonly Action _onLogoutAction;
 
     [ObservableProperty]
-    private ObservableCollection<Order> _pendingOrders = new();
+    private ObservableCollection<Order> _cookingOrders = new();
+
+    [ObservableProperty]
+    private string _chefStatusMessage = string.Empty;
 
     public ChefViewModel(Action onLogout)
     {
-        _onLogout = onLogout;
-        LoadOrders();
+        _onLogoutAction = onLogout;
+
+        // Load initial cooking screen orders
+        LoadChefOrders();
+
+        // FIXED: Explicitly registers this kitchen instance to the messenger channel bus
+        WeakReferenceMessenger.Default.Register<OrderChangedMessage>(this);
+    }
+
+    // REQUIRED METHOD: This automatically fires when an OrderChangedMessage is broadcasted anywhere in the app
+    public void Receive(OrderChangedMessage message)
+    {
+        // Forces Avalonia's UI thread to cleanly re-fetch kitchen tickets safely
+        Avalonia.Threading.Dispatcher.UIThread.Post(() => LoadChefOrders());
     }
 
     [RelayCommand]
-    private void LoadOrders()
+    private void Logout()
     {
-        using (var context = new AppDbContext())
-        {
-            // Load orders that are Pending, along with their text menu items
-            var orders = context.Orders
-                .Include(o => o.Items)
-                .ThenInclude(i => i.Product)
-                .Where(o => o.Status == OrderStatus.Pending)
-                .OrderBy(o => o.OrderDate)
-                .ToList();
-
-            PendingOrders = new ObservableCollection<Order>(orders);
-        }
+        // Clean up messenger registrations on logout to prevent memory leaks
+        WeakReferenceMessenger.Default.UnregisterAll(this);
+        _onLogoutAction?.Invoke();
     }
 
     [RelayCommand]
-    private void CompleteCooking(Order order)
+    public void LoadChefOrders()
     {
-        using (var context = new AppDbContext())
+        try
         {
-            var dbOrder = context.Orders.FirstOrDefault(o => o.Id == order.Id);
-            if (dbOrder != null)
+            using (var context = new AppDbContext())
             {
-                // Core automation rule: If it's delivery, send to Driver. If counter, complete it!
-                if (dbOrder.Type == OrderType.Delivery)
-                {
-                    dbOrder.Status = OrderStatus.Ready; // Driver sees this
-                }
-                else
-                {
-                    dbOrder.Status = OrderStatus.Completed; // Counter order picked up immediately
-                }
+                // Fetch all orders that are still being processed or cooked (exclude Completed/Ready)
+                var ordersList = context.Orders
+                    .Include(o => o.Items)
+                    .ThenInclude(i => i.Product)
+                    .Where(o => o.Status == OrderStatus.Pending || o.Status == OrderStatus.Cooking)
+                    .OrderBy(o => o.OrderDate)
+                    .ToList();
 
-                context.SaveChanges();
+                CookingOrders = new ObservableCollection<Order>(ordersList);
             }
         }
-        LoadOrders(); // Refresh the grid screen
+        catch (Exception ex)
+        {
+            ChefStatusMessage = $"❌ Error loading tickets: {ex.Message}";
+        }
     }
 
     [RelayCommand]
-    private void Logout() => _onLogout.Invoke();
+    private void AdvanceStatus(Order order)
+    {
+        if (order == null) return;
+        ChefStatusMessage = string.Empty;
+
+        try
+        {
+            using (var context = new AppDbContext())
+            {
+                var dbOrder = context.Orders.FirstOrDefault(o => o.Id == order.Id);
+                if (dbOrder != null)
+                {
+                    // Kitchen Workflow State Machine
+                    if (dbOrder.Status == OrderStatus.Pending)
+                    {
+                        dbOrder.Status = OrderStatus.Cooking;
+                        ChefStatusMessage = $"🍳 Order #{order.Id} is now cooking!";
+                    }
+                    else if (dbOrder.Status == OrderStatus.Cooking)
+                    {
+                        dbOrder.Status = OrderStatus.Ready;
+                        ChefStatusMessage = $"🍕 Order #{order.Id} is ready for pickup/delivery!";
+                    }
+
+                    context.SaveChanges();
+                }
+            }
+
+            // Broadcast the state update globally across the application so the delivery monitor refreshes instantly
+            WeakReferenceMessenger.Default.Send(new OrderChangedMessage());
+        }
+        catch (Exception ex)
+        {
+            ChefStatusMessage = $"❌ Error advancing status: {ex.Message}";
+        }
+    }
 }
