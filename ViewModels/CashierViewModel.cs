@@ -117,6 +117,9 @@ public partial class CashierViewModel : ViewModelBase
     [RelayCommand]
     private void PlaceOrder()
     {
+        // 1. Create the debug variable at the very top so the whole method can see it
+        int debugRecipeCount = 0;
+
         // Your safety checks are already perfect - keep them exactly as they are!
         if (!Cart.Any())
         {
@@ -148,6 +151,35 @@ public partial class CashierViewModel : ViewModelBase
         {
             using (var context = new AppDbContext())
             {
+                // =================================================================
+                // PHASE 1: STOCK GUARD PRE-CHECK (Do we have enough inventory?)
+                // =================================================================
+                foreach (var cartItem in Cart)
+                {
+                    var recipes = context.ProductIngredients
+                        .Where(pi => pi.ProductId == cartItem.Product.Id)
+                        .ToList();
+
+                    foreach (var recipe in recipes)
+                    {
+                        var ingredient = context.Ingredients.FirstOrDefault(i => i.Id == recipe.IngredientId);
+                        if (ingredient != null)
+                        {
+                            double totalNeeded = recipe.QuantityNeeded * cartItem.Quantity;
+
+                            // If the warehouse is short on stock, stop right here!
+                            if (ingredient.StockQuantity < totalNeeded)
+                            {
+                                StatusMessage = $"❌ Order Failed! Out of '{ingredient.Name}'. (Needed: {totalNeeded} {ingredient.Unit}, Available: {ingredient.StockQuantity} {ingredient.Unit})";
+                                return; // Exits the entire method immediately. Nothing gets saved!
+                            }
+                        }
+                    }
+                }
+
+                // =================================================================
+                // PHASE 2: CONSTRUCT ORDER RECORD (Only runs if Phase 1 passes!)
+                // =================================================================
                 var newOrder = new Order
                 {
                     Type = IsDelivery ? OrderType.Delivery : OrderType.Counter,
@@ -176,23 +208,54 @@ public partial class CashierViewModel : ViewModelBase
                     newOrder.Items.Add(orderItem);
                 }
 
+                // Stage the order record
                 context.Orders.Add(newOrder);
+
+                // =================================================================
+                // PHASE 3: DEDUCT STOCK FROM INVENTORY
+                // =================================================================
+                foreach (var cartItem in Cart)
+                {
+                    // Find all raw ingredient recipes tied to this item
+                    var recipes = context.ProductIngredients
+                        .Where(pi => pi.ProductId == cartItem.Product.Id)
+                        .ToList();
+
+                    // Add to our debug counter
+                    debugRecipeCount += recipes.Count;
+
+                    foreach (var recipe in recipes)
+                    {
+                        var ingredient = context.Ingredients.FirstOrDefault(i => i.Id == recipe.IngredientId);
+                        if (ingredient != null)
+                        {
+                            double totalDeduction = recipe.QuantityNeeded * cartItem.Quantity;
+                            ingredient.StockQuantity -= totalDeduction;
+
+                            if (ingredient.StockQuantity < 0)
+                            {
+                                ingredient.StockQuantity = 0;
+                            }
+                        }
+                    }
+                }
+                // ==========================================
+
                 context.SaveChanges();
                 CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new OrderChangedMessage());
             }
 
-            // TWEAKED FOR THE VISUAL RECEIPT:
-            // We clear the basket items, but we leave CustomerName and CartTotal alone 
-            // for a moment so the receipt UI can display the summary of the transaction.
+            // Clear the basket items
             Cart.Clear();
 
-            // These fields clear safely out of view if IsDelivery switches down
+            // Clear fields
             PhoneNumber = string.Empty;
             DeliveryAddress = string.Empty;
             IsDelivery = false;
             SelectedDriver = null;
 
-            StatusMessage = "🎉 Order placed successfully and printed to receipt summary!";
+            // Display our diagnostic readout
+            StatusMessage = $"🎉 Order placed! [DEBUG: Found {debugRecipeCount} recipe links]";
         }
         catch (Exception ex)
         {
@@ -200,7 +263,6 @@ public partial class CashierViewModel : ViewModelBase
         }
     }
 
-    // NEW: Action command letting cashier submit customer reviews into database table log directly
     [RelayCommand]
     private void SubmitFeedback()
     {

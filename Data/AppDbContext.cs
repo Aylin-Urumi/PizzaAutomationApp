@@ -9,7 +9,8 @@ public class AppDbContext : DbContext
     public DbSet<Product> Products { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
-
+    public DbSet<Ingredient> Ingredients { get; set; } = null!;
+    public DbSet<ProductIngredient> ProductIngredients { get; set; } = null!;
     public DbSet<CustomerFeedback> CustomerFeedbacks { get; set; } = null!;
 
     public AppDbContext()

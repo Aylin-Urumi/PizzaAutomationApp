@@ -20,6 +20,10 @@ public partial class ManagerViewModel : ViewModelBase
 
     [ObservableProperty] private int _totalOrdersCount;
     [ObservableProperty] private ObservableCollection<Order> _recentOrders = new();
+    // Inventory Management Properties
+    [ObservableProperty] private ObservableCollection<Ingredient> _ingredients = new();
+    [ObservableProperty] private Ingredient? _selectedIngredient;
+    [ObservableProperty] private string _restockAmountText = string.Empty;
 
     // Staff Management Properties
     [ObservableProperty] private ObservableCollection<User> _workers = new();
@@ -54,7 +58,7 @@ public partial class ManagerViewModel : ViewModelBase
             TotalSales = ordersList.Sum(o => o.TotalAmount);
             TotalOrdersCount = ordersList.Count;
 
-            // NEW: Get current date parameters for processing daily and monthly sales
+            // Get current date parameters for processing daily and monthly sales
             var today = DateTime.Today;
 
             // Calculate Daily Revenue (Matching today's exact date stamp)
@@ -74,6 +78,10 @@ public partial class ManagerViewModel : ViewModelBase
             // 3. Load Customer Feedbacks
             var feedbackList = context.CustomerFeedbacks.OrderByDescending(f => f.DateSubmitted).ToList();
             Feedbacks = new ObservableCollection<CustomerFeedback>(feedbackList);
+
+            // 4. NEW: Load Current Warehouse Inventory Stock Logs
+            var inventoryList = context.Ingredients.OrderBy(i => i.Name).ToList();
+            Ingredients = new ObservableCollection<Ingredient>(inventoryList);
         }
     }
 
@@ -172,6 +180,46 @@ public partial class ManagerViewModel : ViewModelBase
         catch (Exception ex)
         {
             ManagerStatusMessage = $"❌ Error clearing feedback: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private void RestockIngredient()
+    {
+        ManagerStatusMessage = string.Empty;
+
+        if (SelectedIngredient == null)
+        {
+            ManagerStatusMessage = "❌ Please choose an ingredient item to restock!";
+            return;
+        }
+
+        if (!double.TryParse(RestockAmountText, out double supplyValue) || supplyValue <= 0)
+        {
+            ManagerStatusMessage = "❌ Please enter a valid restock amount greater than 0.";
+            return;
+        }
+
+        try
+        {
+            using (var context = new AppDbContext())
+            {
+                var dbIngredient = context.Ingredients.FirstOrDefault(i => i.Id == SelectedIngredient.Id);
+                if (dbIngredient != null)
+                {
+                    dbIngredient.StockQuantity += supplyValue;
+                    context.SaveChanges();
+                }
+            }
+
+            // Flush panel inputs and refresh list views
+            RestockAmountText = string.Empty;
+            LoadDashboardData();
+            ManagerStatusMessage = $"🎉 Successfully restocked {SelectedIngredient.Name}!";
+        }
+        catch (Exception ex)
+        {
+            ManagerStatusMessage = $"❌ Restock transaction failed: {ex.Message}";
         }
     }
 }
