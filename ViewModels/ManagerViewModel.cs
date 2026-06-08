@@ -194,11 +194,19 @@ public partial class ManagerViewModel : ViewModelBase
             return;
         }
 
-        if (!double.TryParse(RestockAmountText, out double supplyValue) || supplyValue <= 0)
+        // 1. REGEX FIX: Automatically strip away words like "pcs", "g", "cans", or spaces
+        // This extracts only the numeric part (e.g., "500 pcs" becomes "500")
+        string cleanedInput = System.Text.RegularExpressions.Regex.Match(RestockAmountText ?? "", @"[0-9]+(\.[0-9]+)?").Value;
+
+        if (!double.TryParse(cleanedInput, out double supplyValue) || supplyValue <= 0)
         {
             ManagerStatusMessage = "❌ Please enter a valid restock amount greater than 0.";
             return;
         }
+
+        // 2. MVVM FIX: Cache the name IMMEDIATELY before reloading data.
+        // If LoadDashboardData() resets the list selection, our success message stays safe!
+        string targetIngredientName = SelectedIngredient.Name;
 
         try
         {
@@ -215,7 +223,9 @@ public partial class ManagerViewModel : ViewModelBase
             // Flush panel inputs and refresh list views
             RestockAmountText = string.Empty;
             LoadDashboardData();
-            ManagerStatusMessage = $"🎉 Successfully restocked {SelectedIngredient.Name}!";
+
+            // Use our safely saved name variable here
+            ManagerStatusMessage = $"🎉 Successfully restocked {targetIngredientName}!";
         }
         catch (Exception ex)
         {

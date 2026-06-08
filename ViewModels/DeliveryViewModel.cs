@@ -10,7 +10,6 @@ using PizzaApp.Models;
 
 namespace PizzaApp.ViewModels;
 
-// FIXED: Added the IRecipient interface implementation to satisfy the compiler and handle real-time sync messages
 public partial class DeliveryViewModel : ViewModelBase, IRecipient<OrderChangedMessage>
 {
     private readonly Action _onLogout;

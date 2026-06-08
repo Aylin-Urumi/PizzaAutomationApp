@@ -117,9 +117,6 @@ public partial class CashierViewModel : ViewModelBase
     [RelayCommand]
     private void PlaceOrder()
     {
-        // 1. Create the debug variable at the very top so the whole method can see it
-        int debugRecipeCount = 0;
-
         // Your safety checks are already perfect - keep them exactly as they are!
         if (!Cart.Any())
         {
@@ -221,8 +218,6 @@ public partial class CashierViewModel : ViewModelBase
                         .Where(pi => pi.ProductId == cartItem.Product.Id)
                         .ToList();
 
-                    // Add to our debug counter
-                    debugRecipeCount += recipes.Count;
 
                     foreach (var recipe in recipes)
                     {
@@ -255,7 +250,7 @@ public partial class CashierViewModel : ViewModelBase
             SelectedDriver = null;
 
             // Display our diagnostic readout
-            StatusMessage = $"🎉 Order placed! [DEBUG: Found {debugRecipeCount} recipe links]";
+            StatusMessage = $"🎉 Order placed!";
         }
         catch (Exception ex)
         {

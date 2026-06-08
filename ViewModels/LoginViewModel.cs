@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PizzaApp.Data;
+using PizzaApp.Models; // 🌟 ADDED this to see the User model
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,9 +10,9 @@ namespace PizzaApp.ViewModels;
 
 public partial class LoginViewModel : ViewModelBase
 {
-    private readonly Action<string> _onLoginSuccess;
+    // 🌟 CHANGED: Now passes the entire User object instead of just a string role
+    private readonly Action<User> _onLoginSuccess;
 
-    // The items that will populate our dropdown list
     public List<string> Roles { get; } = new() { "Manager", "Cashier", "Chef", "Driver" };
 
     [ObservableProperty]
@@ -23,10 +24,10 @@ public partial class LoginViewModel : ViewModelBase
     [ObservableProperty]
     private string _errorMessage = string.Empty;
 
-    public LoginViewModel(Action<string> onLoginSuccess)
+    // 🌟 CHANGED: Constructor now expects Action<User>
+    public LoginViewModel(Action<User> onLoginSuccess)
     {
         _onLoginSuccess = onLoginSuccess;
-        // Default select 'Manager' when the screen first loads
         SelectedRole = Roles[0];
     }
 
@@ -49,13 +50,12 @@ public partial class LoginViewModel : ViewModelBase
 
         using (var context = new AppDbContext())
         {
-            // CRITICAL: Checks that BOTH the selected role AND the PIN code match together
             var matchedUser = context.Users.FirstOrDefault(u => u.Role == SelectedRole && u.PinCode == PinCode);
 
             if (matchedUser != null)
             {
-                // Trigger our main frame to switch screens!
-                _onLoginSuccess?.Invoke(matchedUser.Role);
+                // 🌟 CHANGED: Pass the actual matched user profile over to the main frame!
+                _onLoginSuccess?.Invoke(matchedUser);
             }
             else
             {
