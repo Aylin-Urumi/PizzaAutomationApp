@@ -30,15 +30,17 @@ public class MainWindowViewModel : ViewModelBase
 
             if (role == "Cashier")
             {
-                CurrentPage = new CashierViewModel(() => CurrentPage = CreateLoginScreen());
+                // 🌟 UPDATED: Passing the real authenticated user to Cashier
+                CurrentPage = new CashierViewModel(authenticatedUser, () => CurrentPage = CreateLoginScreen());
             }
             else if (role == "Manager")
             {
-                CurrentPage = new ManagerViewModel(() => CurrentPage = CreateLoginScreen());
+                CurrentPage = new ManagerViewModel(authenticatedUser, () => CurrentPage = CreateLoginScreen());
             }
             else if (role == "Chef")
             {
-                CurrentPage = new ChefViewModel(() => CurrentPage = CreateLoginScreen());
+                // 🌟 UPDATED: Passing the real authenticated user to Chef
+                CurrentPage = new ChefViewModel(authenticatedUser, () => CurrentPage = CreateLoginScreen());
             }
             else if (role == "Driver" || role == "Delivery")
             {

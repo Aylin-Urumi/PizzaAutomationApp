@@ -10,10 +10,13 @@ using PizzaApp.Models;
 
 namespace PizzaApp.ViewModels;
 
-// FIXED: Added the IRecipient interface implementation to satisfy the compiler and handle real-time kitchen syncs
 public partial class ChefViewModel : ViewModelBase, IRecipient<OrderChangedMessage>
 {
     private readonly Action _onLogoutAction;
+
+    // 🌟 NEW: Track exactly which chef profile is active on this monitor
+    [ObservableProperty]
+    private User _currentChef;
 
     [ObservableProperty]
     private ObservableCollection<Order> _cookingOrders = new();
@@ -21,28 +24,28 @@ public partial class ChefViewModel : ViewModelBase, IRecipient<OrderChangedMessa
     [ObservableProperty]
     private string _chefStatusMessage = string.Empty;
 
-    public ChefViewModel(Action onLogout)
+    // 🌟 UPDATED: Constructor now accepts the authenticated Chef user
+    public ChefViewModel(User authenticatedChef, Action onLogout)
     {
+        _currentChef = authenticatedChef;
         _onLogoutAction = onLogout;
 
         // Load initial cooking screen orders
         LoadChefOrders();
 
-        // FIXED: Explicitly registers this kitchen instance to the messenger channel bus
+        // Explicitly registers this kitchen instance to the messenger channel bus
         WeakReferenceMessenger.Default.Register<OrderChangedMessage>(this);
     }
 
-    // REQUIRED METHOD: This automatically fires when an OrderChangedMessage is broadcasted anywhere in the app
+    // Required Method for real-time kitchen syncs
     public void Receive(OrderChangedMessage message)
     {
-        // Forces Avalonia's UI thread to cleanly re-fetch kitchen tickets safely
         Avalonia.Threading.Dispatcher.UIThread.Post(() => LoadChefOrders());
     }
 
     [RelayCommand]
     private void Logout()
     {
-        // Clean up messenger registrations on logout to prevent memory leaks
         WeakReferenceMessenger.Default.UnregisterAll(this);
         _onLogoutAction?.Invoke();
     }
@@ -54,11 +57,12 @@ public partial class ChefViewModel : ViewModelBase, IRecipient<OrderChangedMessa
         {
             using (var context = new AppDbContext())
             {
-                // Fetch all orders that are still being processed or cooked (exclude Completed/Ready)
+                // 🌟 CRITICAL FILTER: Fetch only orders assigned to THIS specific chef ID
                 var ordersList = context.Orders
                     .Include(o => o.Items)
                     .ThenInclude(i => i.Product)
-                    .Where(o => o.Status == OrderStatus.Pending || o.Status == OrderStatus.Cooking)
+                    .Where(o => o.AssignedChefId == CurrentChef.Id && 
+                               (o.Status == OrderStatus.Pending || o.Status == OrderStatus.Cooking))
                     .OrderBy(o => o.OrderDate)
                     .ToList();
 
@@ -92,9 +96,6 @@ public partial class ChefViewModel : ViewModelBase, IRecipient<OrderChangedMessa
                     }
                     else if (dbOrder.Status == OrderStatus.Cooking)
                     {
-                        // FIX: Check if it requires a driver. 
-                        // If it's delivery, mark it Ready so drivers can see it.
-                        // If it's takeout (Counter), mark it Completed immediately!
                         if (dbOrder.Type == OrderType.Delivery)
                         {
                             dbOrder.Status = OrderStatus.Ready;

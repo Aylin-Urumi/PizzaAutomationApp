@@ -17,6 +17,7 @@ public partial class ManagerViewModel : ViewModelBase
     [ObservableProperty] private decimal _totalSales;
     [ObservableProperty] private decimal _dailyRevenue;
     [ObservableProperty] private decimal _monthlyRevenue;
+    [ObservableProperty] private User _currentManager;
 
     [ObservableProperty] private int _totalOrdersCount;
     [ObservableProperty] private ObservableCollection<Order> _recentOrders = new();
@@ -38,8 +39,9 @@ public partial class ManagerViewModel : ViewModelBase
 
     [ObservableProperty] private string _managerStatusMessage = string.Empty;
 
-    public ManagerViewModel(Action onLogout)
+    public ManagerViewModel(User authenticatedManager, Action onLogout)
     {
+        _currentManager = authenticatedManager;
         _onLogoutAction = onLogout;
         LoadDashboardData();
     }
@@ -50,38 +52,34 @@ public partial class ManagerViewModel : ViewModelBase
     [RelayCommand]
     public void LoadDashboardData()
     {
-        using (var context = new AppDbContext())
+        try
         {
-            // 1. Load Analytics
-            var ordersList = context.Orders.OrderByDescending(o => o.OrderDate).ToList();
-            RecentOrders = new ObservableCollection<Order>(ordersList);
-            TotalSales = ordersList.Sum(o => o.TotalAmount);
-            TotalOrdersCount = ordersList.Count;
+            using (var context = new AppDbContext())
+            {
+                var ordersList = context.Orders.OrderByDescending(o => o.OrderDate).ToList();
+                RecentOrders = new ObservableCollection<Order>(ordersList);
+                TotalSales = ordersList.Sum(o => o.TotalAmount);
+                TotalOrdersCount = ordersList.Count;
 
-            // Get current date parameters for processing daily and monthly sales
-            var today = DateTime.Today;
+                var today = DateTime.Today;
+                DailyRevenue = ordersList.Where(o => o.OrderDate.Date == today).Sum(o => o.TotalAmount);
+                MonthlyRevenue = ordersList.Where(o => o.OrderDate.Month == today.Month && o.OrderDate.Year == today.Year).Sum(o => o.TotalAmount);
 
-            // Calculate Daily Revenue (Matching today's exact date stamp)
-            DailyRevenue = ordersList
-                .Where(o => o.OrderDate.Date == today)
-                .Sum(o => o.TotalAmount);
+                var usersList = context.Users.Where(u => u.Role != "Manager").ToList();
+                Workers = new ObservableCollection<User>(usersList);
 
-            // Calculate Monthly Revenue (Matching current month and current year)
-            MonthlyRevenue = ordersList
-                .Where(o => o.OrderDate.Month == today.Month && o.OrderDate.Year == today.Year)
-                .Sum(o => o.TotalAmount);
+                var feedbackList = context.CustomerFeedbacks.OrderByDescending(f => f.DateSubmitted).ToList();
+                Feedbacks = new ObservableCollection<CustomerFeedback>(feedbackList);
 
-            // 2. Load Staff Roster (Excluding the Manager to prevent accidental self-deletion)
-            var usersList = context.Users.Where(u => u.Role != "Manager").ToList();
-            Workers = new ObservableCollection<User>(usersList);
-
-            // 3. Load Customer Feedbacks
-            var feedbackList = context.CustomerFeedbacks.OrderByDescending(f => f.DateSubmitted).ToList();
-            Feedbacks = new ObservableCollection<CustomerFeedback>(feedbackList);
-
-            // 4. NEW: Load Current Warehouse Inventory Stock Logs
-            var inventoryList = context.Ingredients.OrderBy(i => i.Name).ToList();
-            Ingredients = new ObservableCollection<Ingredient>(inventoryList);
+                var inventoryList = context.Ingredients.OrderBy(i => i.Name).ToList();
+                Ingredients = new ObservableCollection<Ingredient>(inventoryList);
+                
+                ManagerStatusMessage = string.Empty;
+            }
+        }
+        catch (Exception ex)
+        {
+            ManagerStatusMessage = $"⚠️ Error: {ex.Message}";
         }
     }
 

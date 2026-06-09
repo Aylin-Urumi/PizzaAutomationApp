@@ -14,6 +14,10 @@ public partial class CashierViewModel : ViewModelBase
 {
     private Action? _onLogoutAction;
 
+    // 🌟 NEW: Track exactly which cashier profile is placing orders
+    [ObservableProperty]
+    private User _currentCashier;
+
     [ObservableProperty]
     private ObservableCollection<Product> _products = new();
 
@@ -45,6 +49,13 @@ public partial class CashierViewModel : ViewModelBase
     [ObservableProperty]
     private User? _selectedDriver;
 
+    // 🌟 NEW: Properties to populate the chef assignment dropdown selections
+    [ObservableProperty]
+    private ObservableCollection<User> _availableChefs = new();
+
+    [ObservableProperty]
+    private User? _selectedChef;
+
     [ObservableProperty]
     private string _feedbackCustomerName = string.Empty;
 
@@ -54,8 +65,10 @@ public partial class CashierViewModel : ViewModelBase
     public IEnumerable<Product> PizzaMenu => Products.Where(p => p.Category == "Pizza");
     public IEnumerable<Product> DrinkMenu => Products.Where(p => p.Category == "Drinks" || p.Category == "Drink");
 
-    public CashierViewModel(Action onLogout)
+    // 🌟 UPDATED: Constructor accepts the authenticated Cashier user profile
+    public CashierViewModel(User authenticatedCashier, Action onLogout)
     {
+        _currentCashier = authenticatedCashier;
         _onLogoutAction = onLogout;
         LoadInitialData();
     }
@@ -71,11 +84,17 @@ public partial class CashierViewModel : ViewModelBase
             var productList = context.Products.ToList();
             Products = new ObservableCollection<Product>(productList);
 
-            // NEW: Fetch all user accounts registered under the "Driver" or "Delivery" roles
+            // Fetch all user accounts registered under the "Driver" or "Delivery" roles
             var driverList = context.Users
                 .Where(u => u.Role == "Driver" || u.Role == "Delivery")
                 .ToList();
             Drivers = new ObservableCollection<User>(driverList);
+
+            // 🌟 NEW: Dynamically pull down all staff users assigned to the Kitchen/Chef role
+            var chefList = context.Users
+                .Where(u => u.Role == "Chef")
+                .ToList();
+            AvailableChefs = new ObservableCollection<User>(chefList);
         }
 
         OnPropertyChanged(nameof(PizzaMenu));
@@ -117,7 +136,6 @@ public partial class CashierViewModel : ViewModelBase
     [RelayCommand]
     private void PlaceOrder()
     {
-        // Your safety checks are already perfect - keep them exactly as they are!
         if (!Cart.Any())
         {
             StatusMessage = "❌ Cannot place an empty order!";
@@ -127,6 +145,13 @@ public partial class CashierViewModel : ViewModelBase
         if (string.IsNullOrWhiteSpace(CustomerName))
         {
             StatusMessage = "❌ Please enter a Customer Name!";
+            return;
+        }
+
+        // 🌟 NEW: Safety validation check ensuring a kitchen staff member has been chosen
+        if (SelectedChef == null)
+        {
+            StatusMessage = "❌ Please assign a kitchen chef to cook this order!";
             return;
         }
 
@@ -164,18 +189,17 @@ public partial class CashierViewModel : ViewModelBase
                         {
                             double totalNeeded = recipe.QuantityNeeded * cartItem.Quantity;
 
-                            // If the warehouse is short on stock, stop right here!
                             if (ingredient.StockQuantity < totalNeeded)
                             {
                                 StatusMessage = $"❌ Order Failed! Out of '{ingredient.Name}'. (Needed: {totalNeeded} {ingredient.Unit}, Available: {ingredient.StockQuantity} {ingredient.Unit})";
-                                return; // Exits the entire method immediately. Nothing gets saved!
+                                return; 
                             }
                         }
                     }
                 }
 
                 // =================================================================
-                // PHASE 2: CONSTRUCT ORDER RECORD (Only runs if Phase 1 passes!)
+                // PHASE 2: CONSTRUCT ORDER RECORD (With Full Audit Log Accountability)
                 // =================================================================
                 var newOrder = new Order
                 {
@@ -186,6 +210,10 @@ public partial class CashierViewModel : ViewModelBase
                     DeliveryAddress = IsDelivery ? DeliveryAddress.Trim() : null,
                     TotalAmount = CartTotal,
                     IsPaid = true,
+                    
+                    // 🌟 FULL WORKFORCE COMPLIANCE ASSIGNMENT 🌟
+                    CreatedByCashierId = CurrentCashier.Id,
+                    AssignedChefId = SelectedChef.Id,
                     AssignedDriverId = IsDelivery ? SelectedDriver?.Id : null
                 };
 
@@ -205,7 +233,6 @@ public partial class CashierViewModel : ViewModelBase
                     newOrder.Items.Add(orderItem);
                 }
 
-                // Stage the order record
                 context.Orders.Add(newOrder);
 
                 // =================================================================
@@ -213,11 +240,9 @@ public partial class CashierViewModel : ViewModelBase
                 // =================================================================
                 foreach (var cartItem in Cart)
                 {
-                    // Find all raw ingredient recipes tied to this item
                     var recipes = context.ProductIngredients
                         .Where(pi => pi.ProductId == cartItem.Product.Id)
                         .ToList();
-
 
                     foreach (var recipe in recipes)
                     {
@@ -234,7 +259,6 @@ public partial class CashierViewModel : ViewModelBase
                         }
                     }
                 }
-                // ==========================================
 
                 context.SaveChanges();
                 CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.Send(new OrderChangedMessage());
@@ -248,8 +272,8 @@ public partial class CashierViewModel : ViewModelBase
             DeliveryAddress = string.Empty;
             IsDelivery = false;
             SelectedDriver = null;
+            SelectedChef = null; // 🌟 Reset chef picker state
 
-            // Display our diagnostic readout
             StatusMessage = $"🎉 Order placed!";
         }
         catch (Exception ex)
@@ -303,7 +327,6 @@ public partial class CashierViewModel : ViewModelBase
     }
 }
 
-// (The OrderItemViewModel and ToppingItem child classes remain completely identical underneath)
 public partial class OrderItemViewModel : ObservableObject
 {
     private readonly Action _onChanged;

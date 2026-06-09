@@ -8,22 +8,25 @@
     <Border Background="#121212" Padding="20">
         <Grid RowDefinitions="Auto, *">
             
-            <!-- KITCHEN HEADER STRIP -->
             <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Margin="0,0,0,15">
                 <StackPanel Orientation="Horizontal" Spacing="15">
-                    <TextBlock Text="🍳 BACK-HOUSE KITCHEN MONITOR" FontSize="22" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
-                    <!-- FIXED: Swapped LoadOrdersCommand to LoadChefOrdersCommand -->
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Text="🍳 BACK-HOUSE KITCHEN MONITOR" FontSize="22" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" Spacing="5" Margin="0,2,0,0">
+                            <TextBlock Text="👤 Active Station:" FontSize="13" Foreground="#888888"/>
+                            <TextBlock Text="{Binding CurrentChef.Username}" FontSize="13" Foreground="#ff9f43" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </StackPanel>
+                    
                     <Button Content="🔄 Refresh Monitor" Command="{Binding LoadChefOrdersCommand}" Background="#2d2d2d" Foreground="White" Padding="10,5" FontSize="12" VerticalAlignment="Center"/>
                 </StackPanel>
-                <Button Grid.Column="1" Content="Log Out" Command="{Binding LogoutCommand}" Background="#ff4d4d" Foreground="White" Padding="14,7" CornerRadius="5"/>
+                <Button Grid.Column="1" Content="Log Out" Command="{Binding LogoutCommand}" Background="#ff4d4d" Foreground="White" Padding="14,7" CornerRadius="5" VerticalAlignment="Center"/>
             </Grid>
 
-            <!-- ACTIVE ORDERS DISPATCH AREA -->
             <Grid Grid.Row="1" RowDefinitions="Auto, *">
                 <TextBlock Grid.Row="0" Text="{Binding ChefStatusMessage}" Foreground="#4cd137" FontSize="13" Margin="0,0,0,10" HorizontalAlignment="Center" FontWeight="Medium"/>
 
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                    <!-- FIXED: Swapped PendingOrders to CookingOrders -->
                     <ItemsControl ItemsSource="{Binding CookingOrders}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -36,7 +39,6 @@
                                 <Border Background="#1c1c1c" BorderBrush="#2d2d2d" BorderThickness="1" CornerRadius="8" Width="280" Margin="0,0,15,15" Padding="15">
                                     <Grid RowDefinitions="Auto, *, Auto">
                                         
-                                        <!-- Order Identification Line -->
                                         <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Margin="0,0,0,10">
                                             <TextBlock Text="{Binding Id, StringFormat='Order #{0}'}" Foreground="White" FontWeight="Bold" FontSize="16"/>
                                             <Border Background="#2d2d2d" CornerRadius="4" Padding="6,3">
@@ -44,7 +46,6 @@
                                             </Border>
                                         </Grid>
 
-                                        <!-- Itemized Menu Preparation Stack -->
                                         <StackPanel Grid.Row="1" Spacing="5" Margin="0,0,0,15">
                                             <ItemsControl ItemsSource="{Binding Items}">
                                                 <ItemsControl.ItemTemplate>
@@ -64,8 +65,6 @@
                                             </ItemsControl>
                                         </StackPanel>
 
-                                        <!-- Kitchen Progress Flow Interaction Button -->
-                                        <!-- FIXED: Swapped CompleteCookingCommand to AdvanceStatusCommand -->
                                         <Button Grid.Row="2" 
                                                 Command="{Binding $parent[UserControl].((vm:ChefViewModel)DataContext).AdvanceStatusCommand}" 
                                                 CommandParameter="{Binding}"
