@@ -51,5 +51,14 @@ Make sure you have the latest **.NET SDK** installed on your machine.
    git clone [https://github.com/yourusername/PizzaAutomation.git](https://github.com/yourusername/PizzaAutomation.git)
    cd PizzaAutomation/PizzaApp
 ```
+2. **Restore dependencies:**
+```bash
+   dotnet restore
+```
+3. **Database Setup:**
+The application leverages automatic data layout initialization. On first boot, the application will automatically spin up your local SQLite database file, generate the necessary tables, and configure relational mappings without requiring manual initial migrations.
+
+
+
 ### 📂 Architecture & Data Integrity
 🛡️ Data Cascading Rule: The application treats orders as critical financial logs. When a User account is deleted from the Staff Management terminal, the system cascades order records by setting CreatedByCashierId, AssignedChefId, and AssignedDriverId references to null. This keeps historical financial dashboards completely accurate while safely purging unneeded system credentials.
