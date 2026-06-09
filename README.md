@@ -57,7 +57,10 @@ Make sure you have the latest **.NET SDK** installed on your machine.
 ```
 3. **Database Setup:**
 The application leverages automatic data layout initialization. On first boot, the application will automatically spin up your local SQLite database file, generate the necessary tables, and configure relational mappings without requiring manual initial migrations.
-
+4. **Run the app:**
+```bash
+   dotnet run
+```
 
 
 ### 📂 Architecture & Data Integrity
