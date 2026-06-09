@@ -73,7 +73,7 @@ public partial class ManagerViewModel : ViewModelBase
 
                 var inventoryList = context.Ingredients.OrderBy(i => i.Name).ToList();
                 Ingredients = new ObservableCollection<Ingredient>(inventoryList);
-                
+
                 ManagerStatusMessage = string.Empty;
             }
         }
@@ -141,6 +141,19 @@ public partial class ManagerViewModel : ViewModelBase
                 var dbUser = context.Users.FirstOrDefault(u => u.Id == worker.Id);
                 if (dbUser != null)
                 {
+                    // 🌟 STEP 1: Look through all orders and clear out this worker's footprints 
+                    // This sets their relationship ID link to null, leaving the order data untouched.
+
+                    var ordersAsCashier = context.Orders.Where(o => o.CreatedByCashierId == dbUser.Id).ToList();
+                    foreach (var order in ordersAsCashier) order.CreatedByCashierId = null;
+
+                    var ordersAsChef = context.Orders.Where(o => o.AssignedChefId == dbUser.Id).ToList();
+                    foreach (var order in ordersAsChef) order.AssignedChefId = null;
+
+                    var ordersAsDriver = context.Orders.Where(o => o.AssignedDriverId == dbUser.Id).ToList();
+                    foreach (var order in ordersAsDriver) order.AssignedDriverId = null;
+
+                    // 🌟 STEP 2: Now that all past order links are safely detached, SQLite can proceed!
                     context.Users.Remove(dbUser);
                     context.SaveChanges();
                 }
